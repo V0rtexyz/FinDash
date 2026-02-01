@@ -13,7 +13,7 @@
     "stylelint:fix": "stylelint \"**/*.css\" --fix",
     "test:unit": "NODE_OPTIONS=--experimental-vm-modules jest",
     "test:unit:coverage": "NODE_OPTIONS=--experimental-vm-modules jest --coverage",
-    "test:e2e": "npx playwright test tests/e2e || echo 'No e2e tests to run' || true",
+    "test:e2e": "npx playwright test --config=../playwright.config.ts || true",
     "preview": "vite preview",
     "server": "node ../backend/server.js",
     "server:dev": "node --watch ../backend/server.js"
@@ -44,6 +44,7 @@
     "ws": "^8.18.3"
   },
   "devDependencies": {
+    "@types/jest": "^29.5.12",
     "@eslint/js": "^9.38.0",
     "@playwright/test": "^1.57.0",
     "@testing-library/jest-dom": "^6.9.1",
