@@ -1,5 +1,18 @@
 import { StorageService } from "../../../src/services/StorageService";
-import { CurrencyAPI } from "../../../src/services/CurrencyAPI";
+import { CurrencyData } from "../../../src/services/CurrencyAPI";
+
+// Mock currency data - не используем реальный API
+const createMockCurrency = (symbol: string, name: string): CurrencyData => ({
+  symbol,
+  name,
+  price: 50000,
+  change24h: 2.5,
+  timestamp: Date.now(),
+  history: [
+    { timestamp: Date.now() - 86400000, price: 48000 },
+    { timestamp: Date.now(), price: 50000 },
+  ],
+});
 
 describe("StorageService", () => {
   beforeEach(() => {
@@ -12,7 +25,7 @@ describe("StorageService", () => {
   });
 
   test("should add currency to storage", async () => {
-    const currency = await CurrencyAPI.fetchCurrencyData("BTC");
+    const currency = createMockCurrency("BTC", "Bitcoin");
     await StorageService.addToStorage(currency);
     const storage = await StorageService.getStorage();
     expect(storage.length).toBe(1);
@@ -20,7 +33,7 @@ describe("StorageService", () => {
   });
 
   test("should not add duplicate currency", async () => {
-    const currency = await CurrencyAPI.fetchCurrencyData("BTC");
+    const currency = createMockCurrency("BTC", "Bitcoin");
     await StorageService.addToStorage(currency);
     await StorageService.addToStorage(currency);
     const storage = await StorageService.getStorage();
@@ -28,7 +41,7 @@ describe("StorageService", () => {
   });
 
   test("should remove currency from storage", async () => {
-    const currency = await CurrencyAPI.fetchCurrencyData("BTC");
+    const currency = createMockCurrency("BTC", "Bitcoin");
     await StorageService.addToStorage(currency);
     const storage = await StorageService.getStorage();
     await StorageService.removeFromStorage(storage[0].id);
@@ -42,7 +55,7 @@ describe("StorageService", () => {
   });
 
   test("should add currency to favorites", async () => {
-    const currency = await CurrencyAPI.fetchCurrencyData("ETH");
+    const currency = createMockCurrency("ETH", "Ethereum");
     await StorageService.addToFavorites(currency);
     const favorites = await StorageService.getFavorites();
     expect(favorites.length).toBe(1);

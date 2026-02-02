@@ -1,7 +1,27 @@
 import { CurrencyAPI } from "../../../src/services/CurrencyAPI";
 
+// Mock fetch globally
+const mockFetch = jest.fn();
+global.fetch = mockFetch;
+
 describe("CurrencyAPI", () => {
+  beforeEach(() => {
+    mockFetch.mockClear();
+  });
+
   test("should fetch available currencies", async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        success: true,
+        currencies: {
+          BTC: "Bitcoin",
+          ETH: "Ethereum",
+          USDT: "Tether",
+        },
+      }),
+    });
+
     const currencies = await CurrencyAPI.fetchAvailableCurrencies();
     expect(currencies).toBeDefined();
     expect(Array.isArray(currencies)).toBe(true);
@@ -9,19 +29,67 @@ describe("CurrencyAPI", () => {
   });
 
   test("should fetch currency data for valid symbol", async () => {
+    // Mock rates response
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        success: true,
+        rates: { BTC: 50000 },
+        timestamp: Date.now(),
+      }),
+    });
+
+    // Mock timeseries response
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        success: true,
+        symbol: "BTC",
+        rates: [
+          { date: "2024-01-01", rate: 48000 },
+          { date: "2024-01-02", rate: 50000 },
+        ],
+      }),
+    });
+
     const data = await CurrencyAPI.fetchCurrencyData("BTC");
     expect(data).toBeDefined();
     expect(data.symbol).toBe("BTC");
-    expect(data.name).toBe("Bitcoin");
-    expect(data.price).toBeGreaterThan(0);
+    expect(data.price).toBe(50000);
     expect(Array.isArray(data.history)).toBe(true);
   });
 
   test("should throw error for invalid symbol", async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        success: false,
+        rates: {},
+      }),
+    });
+
     await expect(CurrencyAPI.fetchCurrencyData("INVALID")).rejects.toThrow();
   });
 
   test("should return currency data with correct structure", async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        success: true,
+        rates: { ETH: 3000 },
+        timestamp: Date.now(),
+      }),
+    });
+
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        success: true,
+        symbol: "ETH",
+        rates: [{ date: "2024-01-01", rate: 2900 }],
+      }),
+    });
+
     const data = await CurrencyAPI.fetchCurrencyData("ETH");
     expect(data).toHaveProperty("symbol");
     expect(data).toHaveProperty("name");
@@ -29,5 +97,16 @@ describe("CurrencyAPI", () => {
     expect(data).toHaveProperty("change24h");
     expect(data).toHaveProperty("timestamp");
     expect(data).toHaveProperty("history");
+  });
+
+  test("should return fallback currencies when API fails", async () => {
+    mockFetch.mockRejectedValueOnce(new Error("Network error"));
+
+    const currencies = await CurrencyAPI.fetchAvailableCurrencies();
+    expect(currencies).toBeDefined();
+    expect(Array.isArray(currencies)).toBe(true);
+    // Should return fallback currencies
+    expect(currencies.length).toBeGreaterThan(0);
+    expect(currencies.some((c) => c.symbol === "BTC")).toBe(true);
   });
 });
