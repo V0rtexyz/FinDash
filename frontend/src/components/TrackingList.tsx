@@ -1,13 +1,16 @@
-import { useCurrency } from '../context/CurrencyContext';
-import { CurrencyController } from '../services/CurrencyController';
-import '../styles/TrackingList.css';
+import { useCurrency } from "../context/CurrencyContext";
+import { CurrencyController } from "../services/CurrencyController";
+import "../styles/TrackingList.css";
 
 interface TrackingListProps {
   onAddToHistory: (symbol: string) => void;
   onAddToFavorites: (symbol: string) => void;
 }
 
-export function TrackingList({ onAddToHistory, onAddToFavorites }: TrackingListProps) {
+export function TrackingList({
+  onAddToHistory,
+  onAddToFavorites,
+}: TrackingListProps) {
   const { currencies, unsubscribeFromCurrency, removeCurrency } = useCurrency();
 
   const currencyArray = Array.from(currencies.values());
@@ -47,13 +50,19 @@ export function TrackingList({ onAddToHistory, onAddToFavorites }: TrackingListP
                 <span className="currency-symbol">{currency.symbol}</span>
                 <span className="currency-name">{currency.name}</span>
               </div>
-              <span className={`currency-change ${currency.change24h >= 0 ? 'positive' : 'negative'}`}>
-                {currency.change24h >= 0 ? '↑' : '↓'} {Math.abs(currency.change24h).toFixed(2)}%
+              <span
+                className={`currency-change ${
+                  currency.change24h >= 0 ? "positive" : "negative"
+                }`}
+              >
+                {currency.change24h >= 0 ? "↑" : "↓"}{" "}
+                {Math.abs(currency.change24h).toFixed(2)}%
               </span>
             </div>
 
             <div className="item-price">
-              ${currency.price.toLocaleString('en-US', {
+              $
+              {currency.price.toLocaleString("en-US", {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2,
               })}
@@ -61,7 +70,8 @@ export function TrackingList({ onAddToHistory, onAddToFavorites }: TrackingListP
 
             <div className="item-meta">
               <span className="update-time">
-                Обновлено: {new Date(currency.timestamp).toLocaleTimeString('ru-RU')}
+                Обновлено:{" "}
+                {new Date(currency.timestamp).toLocaleTimeString("ru-RU")}
               </span>
             </div>
 
@@ -94,5 +104,3 @@ export function TrackingList({ onAddToHistory, onAddToFavorites }: TrackingListP
     </div>
   );
 }
-
-

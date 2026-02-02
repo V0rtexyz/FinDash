@@ -1,16 +1,16 @@
-import * as Sentry from '@sentry/react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider } from './context/AuthContext';
-import { CurrencyListProvider } from './context/CurrencyListContext';
-import { CurrencyProvider } from './context/CurrencyContext';
-import { ReportProvider } from './context/ReportContext';
-import { AuthView } from './components/AuthView';
-import { Confirm } from './components/Confirm';
-import { Dashboard } from './components/Dashboard';
-import { TrackingPage } from './components/TrackingPage';
-import { ReportsPage } from './components/ReportsPage';
-import { PrivateRoute } from './components/PrivateRoute';
-import './index.css';
+import * as Sentry from "@sentry/react";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { AuthProvider } from "./context/AuthContext";
+import { CurrencyListProvider } from "./context/CurrencyListContext";
+import { CurrencyProvider } from "./context/CurrencyContext";
+import { ReportProvider } from "./context/ReportContext";
+import { AuthView } from "./components/AuthView";
+import { Confirm } from "./components/Confirm";
+import { Dashboard } from "./components/Dashboard";
+import { TrackingPage } from "./components/TrackingPage";
+import { ReportsPage } from "./components/ReportsPage";
+import { PrivateRoute } from "./components/PrivateRoute";
+import "./index.css";
 
 function App() {
   return (
@@ -22,37 +22,37 @@ function App() {
               <BrowserRouter>
                 <Routes>
                   <Route path="/" element={<AuthView />} />
-                  <Route 
-                    path="/confirm" 
+                  <Route
+                    path="/confirm"
                     element={
                       <PrivateRoute>
                         <Confirm />
                       </PrivateRoute>
-                    } 
+                    }
                   />
-                  <Route 
-                    path="/dashboard" 
+                  <Route
+                    path="/dashboard"
                     element={
                       <PrivateRoute>
                         <Dashboard />
                       </PrivateRoute>
-                    } 
+                    }
                   />
-                  <Route 
-                    path="/tracking" 
+                  <Route
+                    path="/tracking"
                     element={
                       <PrivateRoute>
                         <TrackingPage />
                       </PrivateRoute>
-                    } 
+                    }
                   />
-                  <Route 
-                    path="/reports" 
+                  <Route
+                    path="/reports"
                     element={
                       <PrivateRoute>
                         <ReportsPage />
                       </PrivateRoute>
-                    } 
+                    }
                   />
                   <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
@@ -66,4 +66,3 @@ function App() {
 }
 
 export default App;
-

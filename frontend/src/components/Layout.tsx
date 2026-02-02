@@ -1,8 +1,8 @@
-import { ReactNode } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { SentryTest } from './SentryTest';
-import '../styles/Layout.css';
+import { ReactNode } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import { SentryTest } from "./SentryTest";
+import "../styles/Layout.css";
 
 interface LayoutProps {
   children: ReactNode;
@@ -15,7 +15,7 @@ export function Layout({ children }: LayoutProps) {
 
   const handleLogout = () => {
     logout();
-    navigate('/');
+    navigate("/");
   };
 
   const isActive = (path: string) => location.pathname === path;
@@ -24,23 +24,23 @@ export function Layout({ children }: LayoutProps) {
     <div className="layout-container">
       <header className="layout-header">
         <h1 className="layout-title">FinDash</h1>
-        
+
         <nav className="layout-nav">
           <button
-            className={`nav-button ${isActive('/dashboard') ? 'active' : ''}`}
-            onClick={() => navigate('/dashboard')}
+            className={`nav-button ${isActive("/dashboard") ? "active" : ""}`}
+            onClick={() => navigate("/dashboard")}
           >
             Панель управления
           </button>
           <button
-            className={`nav-button ${isActive('/tracking') ? 'active' : ''}`}
-            onClick={() => navigate('/tracking')}
+            className={`nav-button ${isActive("/tracking") ? "active" : ""}`}
+            onClick={() => navigate("/tracking")}
           >
             Отслеживание
           </button>
           <button
-            className={`nav-button ${isActive('/reports') ? 'active' : ''}`}
-            onClick={() => navigate('/reports')}
+            className={`nav-button ${isActive("/reports") ? "active" : ""}`}
+            onClick={() => navigate("/reports")}
           >
             Отчёты
           </button>
@@ -53,12 +53,9 @@ export function Layout({ children }: LayoutProps) {
           </button>
         </div>
       </header>
-      
-      <main className="layout-content">
-        {children}
-      </main>
+
+      <main className="layout-content">{children}</main>
       <SentryTest />
     </div>
   );
 }
-

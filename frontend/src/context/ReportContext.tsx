@@ -1,5 +1,11 @@
-import { createContext, useContext, useState, useCallback, ReactNode } from 'react';
-import { Report, ReportService } from '../services/ReportService';
+import {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  ReactNode,
+} from "react";
+import { Report, ReportService } from "../services/ReportService";
 
 interface ReportContextType {
   reports: Report[];
@@ -27,27 +33,30 @@ export function ReportProvider({ children }: { children: ReactNode }) {
       const history = await ReportService.fetchReportHistory();
       setReports(history);
     } catch (err) {
-      setError('Не удалось загрузить историю отчётов');
+      setError("Не удалось загрузить историю отчётов");
     }
   }, []);
 
   const addReport = useCallback(async (report: Report) => {
     await ReportService.saveReport(report);
-    setReports(prev => [report, ...prev]);
+    setReports((prev) => [report, ...prev]);
     setCurrentReport(report);
   }, []);
 
-  const removeReport = useCallback(async (reportId: string) => {
-    try {
-      await ReportService.deleteReport(reportId);
-      setReports(prev => prev.filter(r => r.id !== reportId));
-      if (currentReport?.id === reportId) {
-        setCurrentReport(null);
+  const removeReport = useCallback(
+    async (reportId: string) => {
+      try {
+        await ReportService.deleteReport(reportId);
+        setReports((prev) => prev.filter((r) => r.id !== reportId));
+        if (currentReport?.id === reportId) {
+          setCurrentReport(null);
+        }
+      } catch (err) {
+        setError("Не удалось удалить отчёт");
       }
-    } catch (err) {
-      setError('Не удалось удалить отчёт');
-    }
-  }, [currentReport]);
+    },
+    [currentReport]
+  );
 
   const value = {
     reports,
@@ -62,14 +71,15 @@ export function ReportProvider({ children }: { children: ReactNode }) {
     setError,
   };
 
-  return <ReportContext.Provider value={value}>{children}</ReportContext.Provider>;
+  return (
+    <ReportContext.Provider value={value}>{children}</ReportContext.Provider>
+  );
 }
 
 export function useReport() {
   const context = useContext(ReportContext);
   if (context === undefined) {
-    throw new Error('useReport must be used within a ReportProvider');
+    throw new Error("useReport must be used within a ReportProvider");
   }
   return context;
 }
-

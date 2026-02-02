@@ -1,16 +1,17 @@
-import { useState, useEffect } from 'react';
-import { CurrencyAPI } from '../services/CurrencyAPI';
-import { useCurrency } from '../context/CurrencyContext';
-import { useCurrencyList } from '../context/CurrencyListContext';
-import '../styles/ValueLocator.css';
+import { useState, useEffect } from "react";
+import { CurrencyAPI } from "../services/CurrencyAPI";
+import { useCurrency } from "../context/CurrencyContext";
+import { useCurrencyList } from "../context/CurrencyListContext";
+import "../styles/ValueLocator.css";
 
 export function ValueLocator() {
-  const [selectedSymbol, setSelectedSymbol] = useState<string>('');
+  const [selectedSymbol, setSelectedSymbol] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string>('');
-  
+  const [error, setError] = useState<string>("");
+
   const { addCurrency, subscribeToCurrency, currencies } = useCurrency();
-  const { currencies: availableCurrencies, isLoading: currenciesLoading } = useCurrencyList();
+  const { currencies: availableCurrencies, isLoading: currenciesLoading } =
+    useCurrencyList();
 
   useEffect(() => {
     // Устанавливаем первую валюту из списка по умолчанию
@@ -23,25 +24,30 @@ export function ValueLocator() {
     if (!selectedSymbol) return;
 
     if (currencies.has(selectedSymbol)) {
-      setError('Эта валюта уже добавлена');
-      setTimeout(() => setError(''), 3000);
+      setError("Эта валюта уже добавлена");
+      setTimeout(() => setError(""), 3000);
       return;
     }
 
     setIsLoading(true);
-    setError('');
+    setError("");
 
     try {
       // Получаем имя валюты из списка
-      const currencyInfo = availableCurrencies.find(c => c.symbol === selectedSymbol);
+      const currencyInfo = availableCurrencies.find(
+        (c) => c.symbol === selectedSymbol
+      );
       const currencyName = currencyInfo?.name || selectedSymbol;
-      
+
       // Передаём имя, чтобы не делать лишний запрос
-      const data = await CurrencyAPI.fetchCurrencyData(selectedSymbol, currencyName);
+      const data = await CurrencyAPI.fetchCurrencyData(
+        selectedSymbol,
+        currencyName
+      );
       addCurrency(data);
       subscribeToCurrency(selectedSymbol);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Ошибка загрузки данных');
+      setError(err instanceof Error ? err.message : "Ошибка загрузки данных");
     } finally {
       setIsLoading(false);
     }
@@ -75,8 +81,8 @@ export function ValueLocator() {
             disabled={isLoading}
           >
             {availableCurrencies.map((currency) => {
-              const displayName = currency.name || currency.symbol || '';
-              const displaySymbol = currency.symbol || '';
+              const displayName = currency.name || currency.symbol || "";
+              const displaySymbol = currency.symbol || "";
               return (
                 <option key={displaySymbol} value={displaySymbol}>
                   {displayName} ({displaySymbol})
@@ -90,7 +96,7 @@ export function ValueLocator() {
             className="add-button"
             disabled={isLoading || !selectedSymbol}
           >
-            {isLoading ? 'Загрузка...' : 'Добавить'}
+            {isLoading ? "Загрузка..." : "Добавить"}
           </button>
         </div>
 
@@ -99,4 +105,3 @@ export function ValueLocator() {
     </div>
   );
 }
-

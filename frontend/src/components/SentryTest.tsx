@@ -1,66 +1,66 @@
-import * as Sentry from '@sentry/react';
-import { useState } from 'react';
-import '../styles/SentryTest.css';
+import * as Sentry from "@sentry/react";
+import { useState } from "react";
+import "../styles/SentryTest.css";
 
 function ReactErrorComponent() {
-  throw new Error('React компонент ошибка для тестирования Sentry');
+  throw new Error("React компонент ошибка для тестирования Sentry");
 }
 
 export function SentryTest() {
-  const [testResult, setTestResult] = useState<string>('');
+  const [testResult, setTestResult] = useState<string>("");
   const [showReactError, setShowReactError] = useState(false);
 
   const testRuntimeError = () => {
     try {
-      setTestResult('Отправка runtime ошибки...');
+      setTestResult("Отправка runtime ошибки...");
       const obj: any = null;
       obj.property.access;
     } catch (error) {
       Sentry.captureException(error, {
-        tags: { errorType: 'runtime' },
+        tags: { errorType: "runtime" },
       });
-      setTestResult('Runtime ошибка отправлена в Sentry!');
-      setTimeout(() => setTestResult(''), 3000);
+      setTestResult("Runtime ошибка отправлена в Sentry!");
+      setTimeout(() => setTestResult(""), 3000);
     }
   };
 
   const testAPIError = async () => {
-    setTestResult('Отправка API ошибки...');
+    setTestResult("Отправка API ошибки...");
     try {
-      const response = await fetch('/api/nonexistent-endpoint');
+      const response = await fetch("/api/nonexistent-endpoint");
       if (!response.ok) {
         throw new Error(`API Error: ${response.status} ${response.statusText}`);
       }
     } catch (error) {
       Sentry.captureException(error, {
-        tags: { errorType: 'api' },
+        tags: { errorType: "api" },
         contexts: {
           api: {
-            endpoint: '/api/nonexistent-endpoint',
-            method: 'GET',
+            endpoint: "/api/nonexistent-endpoint",
+            method: "GET",
           },
         },
       });
-      setTestResult('API ошибка отправлена в Sentry!');
-      setTimeout(() => setTestResult(''), 3000);
+      setTestResult("API ошибка отправлена в Sentry!");
+      setTimeout(() => setTestResult(""), 3000);
     }
   };
 
   const testReactError = () => {
-    setTestResult('Отправка React ошибки...');
+    setTestResult("Отправка React ошибки...");
     setShowReactError(true);
     setTimeout(() => {
-      setTestResult('React ошибка отправлена в Sentry!');
+      setTestResult("React ошибка отправлена в Sentry!");
       setShowReactError(false);
-      setTimeout(() => setTestResult(''), 3000);
+      setTimeout(() => setTestResult(""), 3000);
     }, 100);
   };
 
   const testMessage = () => {
-    setTestResult('Отправка тестового сообщения...');
-    Sentry.captureMessage('Тестовое сообщение из FinDash', 'info');
-    setTestResult('Сообщение отправлено в Sentry!');
-    setTimeout(() => setTestResult(''), 3000);
+    setTestResult("Отправка тестового сообщения...");
+    Sentry.captureMessage("Тестовое сообщение из FinDash", "info");
+    setTestResult("Сообщение отправлено в Sentry!");
+    setTimeout(() => setTestResult(""), 3000);
   };
 
   if (showReactError) {
@@ -90,4 +90,3 @@ export function SentryTest() {
     </div>
   );
 }
-

@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
-import { CurrencyController } from '../services/CurrencyController';
-import { FavoriteItem } from '../services/StorageService';
-import '../styles/FavoritesList.css';
+import { useEffect, useState } from "react";
+import { CurrencyController } from "../services/CurrencyController";
+import { FavoriteItem } from "../services/StorageService";
+import "../styles/FavoritesList.css";
 
 interface FavoritesListProps {
   refreshTrigger: number;
@@ -17,7 +17,7 @@ export function FavoritesList({ refreshTrigger }: FavoritesListProps) {
       const items = await CurrencyController.getFavorites();
       setFavorites(items);
     } catch (error) {
-      console.error('Failed to load favorites:', error);
+      console.error("Failed to load favorites:", error);
     } finally {
       setIsLoading(false);
     }
@@ -52,7 +52,9 @@ export function FavoritesList({ refreshTrigger }: FavoritesListProps) {
         </div>
         <div className="empty-state">
           <p>Избранное пусто</p>
-          <p className="empty-hint">Добавляйте важные валюты в избранное для быстрого доступа</p>
+          <p className="empty-hint">
+            Добавляйте важные валюты в избранное для быстрого доступа
+          </p>
         </div>
       </div>
     );
@@ -83,20 +85,26 @@ export function FavoritesList({ refreshTrigger }: FavoritesListProps) {
                 <span className="currency-symbol">{item.currency.symbol}</span>
               </div>
               <div className="currency-name">{item.currency.name}</div>
-              
+
               <div className="currency-price">
-                ${item.currency.price.toLocaleString('en-US', {
+                $
+                {item.currency.price.toLocaleString("en-US", {
                   minimumFractionDigits: 2,
                   maximumFractionDigits: 2,
                 })}
               </div>
 
-              <div className={`currency-change ${item.currency.change24h >= 0 ? 'positive' : 'negative'}`}>
-                {item.currency.change24h >= 0 ? '↑' : '↓'} {Math.abs(item.currency.change24h).toFixed(2)}%
+              <div
+                className={`currency-change ${
+                  item.currency.change24h >= 0 ? "positive" : "negative"
+                }`}
+              >
+                {item.currency.change24h >= 0 ? "↑" : "↓"}{" "}
+                {Math.abs(item.currency.change24h).toFixed(2)}%
               </div>
 
               <div className="added-time">
-                {new Date(item.addedAt).toLocaleDateString('ru-RU')}
+                {new Date(item.addedAt).toLocaleDateString("ru-RU")}
               </div>
             </div>
           </div>
@@ -105,10 +113,3 @@ export function FavoritesList({ refreshTrigger }: FavoritesListProps) {
     </div>
   );
 }
-
-
-
-
-
-
-

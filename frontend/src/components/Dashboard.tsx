@@ -1,9 +1,9 @@
-import { useCurrency } from '../context/CurrencyContext';
-import { Layout } from './Layout';
-import { ValueLocator } from './ValueLocator';
-import { CurrencyCard } from './CurrencyCard';
-import { ChartsView } from './ChartsView';
-import '../styles/Dashboard.css';
+import { useCurrency } from "../context/CurrencyContext";
+import { Layout } from "./Layout";
+import { ValueLocator } from "./ValueLocator";
+import { CurrencyCard } from "./CurrencyCard";
+import { ChartsView } from "./ChartsView";
+import "../styles/Dashboard.css";
 
 export function Dashboard() {
   const { currencies } = useCurrency();
@@ -16,7 +16,7 @@ export function Dashboard() {
         <div className="dashboard-grid">
           <div className="sidebar">
             <ValueLocator />
-            
+
             <div className="currencies-list">
               <h3 className="currencies-title">Отслеживаемые валюты</h3>
               {currencyArray.length === 0 ? (
@@ -26,7 +26,10 @@ export function Dashboard() {
               ) : (
                 <div className="currency-cards">
                   {currencyArray.map((currency) => (
-                    <CurrencyCard key={currency.symbol} symbol={currency.symbol} />
+                    <CurrencyCard
+                      key={currency.symbol}
+                      symbol={currency.symbol}
+                    />
                   ))}
                 </div>
               )}
@@ -41,4 +44,3 @@ export function Dashboard() {
     </Layout>
   );
 }
-

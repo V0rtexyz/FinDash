@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import '../styles/Confirm.css';
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import "../styles/Confirm.css";
 
 export function Confirm() {
   const { user, isAuthenticated } = useAuth();
@@ -10,14 +10,14 @@ export function Confirm() {
 
   useEffect(() => {
     if (!isAuthenticated) {
-      navigate('/');
+      navigate("/");
       return;
     }
 
     const timer = setInterval(() => {
       setCountdown((prev) => {
         if (prev <= 1) {
-          navigate('/dashboard');
+          navigate("/dashboard");
           return 0;
         }
         return prev - 1;
@@ -42,4 +42,3 @@ export function Confirm() {
     </div>
   );
 }
-

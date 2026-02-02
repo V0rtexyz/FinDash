@@ -1,9 +1,9 @@
-import { Layout } from './Layout';
-import { ReportForm } from './ReportForm';
-import { ReportHistory } from './ReportHistory';
-import { useReport } from '../context/ReportContext';
-import { ReportService } from '../services/ReportService';
-import '../styles/ReportsPage.css';
+import { Layout } from "./Layout";
+import { ReportForm } from "./ReportForm";
+import { ReportHistory } from "./ReportHistory";
+import { useReport } from "../context/ReportContext";
+import { ReportService } from "../services/ReportService";
+import "../styles/ReportsPage.css";
 
 export function ReportsPage() {
   const { currentReport, isGenerating, error } = useReport();
@@ -28,11 +28,7 @@ export function ReportsPage() {
           <div className="reports-section">
             <ReportForm />
 
-            {error && (
-              <div className="error-message">
-                {error}
-              </div>
-            )}
+            {error && <div className="error-message">{error}</div>}
 
             {isGenerating && (
               <div className="loading-state">
@@ -48,10 +44,15 @@ export function ReportsPage() {
                   <div className="report-info">
                     <h4 className="report-name">{currentReport.name}</h4>
                     <p className="report-meta">
-                      {currentReport.params.currency} • {currentReport.params.interval} • {currentReport.format.toUpperCase()}
+                      {currentReport.params.currency} •{" "}
+                      {currentReport.params.interval} •{" "}
+                      {currentReport.format.toUpperCase()}
                     </p>
                     <p className="report-date">
-                      Создан: {new Date(currentReport.createdAt).toLocaleString('ru-RU')}
+                      Создан:{" "}
+                      {new Date(currentReport.createdAt).toLocaleString(
+                        "ru-RU"
+                      )}
                     </p>
                   </div>
                 </div>
@@ -73,4 +74,3 @@ export function ReportsPage() {
     </Layout>
   );
 }
-

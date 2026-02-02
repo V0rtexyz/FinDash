@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
-import { CurrencyController } from '../services/CurrencyController';
-import { StorageItem } from '../services/StorageService';
-import '../styles/HistoryList.css';
+import { useEffect, useState } from "react";
+import { CurrencyController } from "../services/CurrencyController";
+import { StorageItem } from "../services/StorageService";
+import "../styles/HistoryList.css";
 
 interface HistoryListProps {
   refreshTrigger: number;
@@ -17,7 +17,7 @@ export function HistoryList({ refreshTrigger }: HistoryListProps) {
       const items = await CurrencyController.getStorage();
       setHistory(items);
     } catch (error) {
-      console.error('Failed to load history:', error);
+      console.error("Failed to load history:", error);
     } finally {
       setIsLoading(false);
     }
@@ -52,7 +52,9 @@ export function HistoryList({ refreshTrigger }: HistoryListProps) {
         </div>
         <div className="empty-state">
           <p>История пуста</p>
-          <p className="empty-hint">Добавляйте валюты в историю для отслеживания изменений</p>
+          <p className="empty-hint">
+            Добавляйте валюты в историю для отслеживания изменений
+          </p>
         </div>
       </div>
     );
@@ -75,20 +77,26 @@ export function HistoryList({ refreshTrigger }: HistoryListProps) {
               </div>
               <div className="price-info">
                 <span className="currency-price">
-                  ${item.currency.price.toLocaleString('en-US', {
+                  $
+                  {item.currency.price.toLocaleString("en-US", {
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2,
                   })}
                 </span>
-                <span className={`currency-change ${item.currency.change24h >= 0 ? 'positive' : 'negative'}`}>
-                  {item.currency.change24h >= 0 ? '↑' : '↓'} {Math.abs(item.currency.change24h).toFixed(2)}%
+                <span
+                  className={`currency-change ${
+                    item.currency.change24h >= 0 ? "positive" : "negative"
+                  }`}
+                >
+                  {item.currency.change24h >= 0 ? "↑" : "↓"}{" "}
+                  {Math.abs(item.currency.change24h).toFixed(2)}%
                 </span>
               </div>
             </div>
 
             <div className="item-footer">
               <span className="added-time">
-                Добавлено: {new Date(item.addedAt).toLocaleString('ru-RU')}
+                Добавлено: {new Date(item.addedAt).toLocaleString("ru-RU")}
               </span>
               <button
                 onClick={() => handleRemove(item.id)}
@@ -104,10 +112,3 @@ export function HistoryList({ refreshTrigger }: HistoryListProps) {
     </div>
   );
 }
-
-
-
-
-
-
-

@@ -1,39 +1,39 @@
-import { useState, FormEvent } from 'react';
-import { CurrencyAPI } from '../services/CurrencyAPI';
-import { ReportService, ReportParams } from '../services/ReportService';
-import { useReport } from '../context/ReportContext';
-import { useCurrency } from '../context/CurrencyContext';
-import { useCurrencyList } from '../context/CurrencyListContext';
-import '../styles/ReportForm.css';
+import { useState, FormEvent } from "react";
+import { CurrencyAPI } from "../services/CurrencyAPI";
+import { ReportService, ReportParams } from "../services/ReportService";
+import { useReport } from "../context/ReportContext";
+import { useCurrency } from "../context/CurrencyContext";
+import { useCurrencyList } from "../context/CurrencyListContext";
+import "../styles/ReportForm.css";
 
 const CURRENCIES = [
-  { symbol: 'BTC', name: 'Bitcoin' },
-  { symbol: 'ETH', name: 'Ethereum' },
-  { symbol: 'USDT', name: 'Tether' },
-  { symbol: 'BNB', name: 'Binance Coin' },
-  { symbol: 'XRP', name: 'Ripple' },
-  { symbol: 'SOL', name: 'Solana' },
-  { symbol: 'ADA', name: 'Cardano' },
+  { symbol: "BTC", name: "Bitcoin" },
+  { symbol: "ETH", name: "Ethereum" },
+  { symbol: "USDT", name: "Tether" },
+  { symbol: "BNB", name: "Binance Coin" },
+  { symbol: "XRP", name: "Ripple" },
+  { symbol: "SOL", name: "Solana" },
+  { symbol: "ADA", name: "Cardano" },
 ];
 
 const INTERVALS = [
-  { value: '1h', label: '1 час' },
-  { value: '1d', label: '1 день' },
-  { value: '1w', label: '1 неделя' },
+  { value: "1h", label: "1 час" },
+  { value: "1d", label: "1 день" },
+  { value: "1w", label: "1 неделя" },
 ];
 
 export function ReportForm() {
-  const [currency, setCurrency] = useState('BTC');
-  const [interval, setInterval] = useState<'1h' | '1d' | '1w'>('1d');
+  const [currency, setCurrency] = useState("BTC");
+  const [interval, setInterval] = useState<"1h" | "1d" | "1w">("1d");
   const [startDate, setStartDate] = useState(() => {
     const date = new Date();
     date.setDate(date.getDate() - 7);
-    return date.toISOString().split('T')[0];
+    return date.toISOString().split("T")[0];
   });
   const [endDate, setEndDate] = useState(() => {
-    return new Date().toISOString().split('T')[0];
+    return new Date().toISOString().split("T")[0];
   });
-  const [format, setFormat] = useState<'pdf' | 'csv'>('pdf');
+  const [format, setFormat] = useState<"pdf" | "csv">("pdf");
 
   const { addReport, setIsGenerating, setError } = useReport();
   const { currencies } = useCurrency();
@@ -47,7 +47,7 @@ export function ReportForm() {
     const end = new Date(endDate);
 
     if (start > end) {
-      setError('Начальная дата не может быть позже конечной');
+      setError("Начальная дата не может быть позже конечной");
       return;
     }
 
@@ -63,11 +63,13 @@ export function ReportForm() {
     try {
       // Проверяем: может валюта уже отслеживается?
       let currencyData = currencies.get(currency);
-      
+
       // Получаем имя валюты из списка
-      const currencyInfo = availableCurrencies.find(c => c.symbol === currency);
+      const currencyInfo = availableCurrencies.find(
+        (c) => c.symbol === currency
+      );
       const currencyName = currencyInfo?.name || currency;
-      
+
       // Если валюта не отслеживается - загружаем с правильными параметрами для отчёта
       if (!currencyData) {
         currencyData = await CurrencyAPI.fetchCurrencyDataForReport(
@@ -83,7 +85,9 @@ export function ReportForm() {
 
       await addReport(report);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Ошибка при создании отчёта');
+      setError(
+        err instanceof Error ? err.message : "Ошибка при создании отчёта"
+      );
     } finally {
       setIsGenerating(false);
     }
@@ -114,7 +118,9 @@ export function ReportForm() {
             <label className="field-label">Интервал</label>
             <select
               value={interval}
-              onChange={(e) => setInterval(e.target.value as '1h' | '1d' | '1w')}
+              onChange={(e) =>
+                setInterval(e.target.value as "1h" | "1d" | "1w")
+              }
               className="field-select"
             >
               {INTERVALS.map((i) => (
@@ -145,7 +151,7 @@ export function ReportForm() {
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
               className="field-input"
-              max={new Date().toISOString().split('T')[0]}
+              max={new Date().toISOString().split("T")[0]}
             />
           </div>
         </div>
@@ -157,8 +163,8 @@ export function ReportForm() {
               <input
                 type="radio"
                 value="pdf"
-                checked={format === 'pdf'}
-                onChange={(e) => setFormat(e.target.value as 'pdf')}
+                checked={format === "pdf"}
+                onChange={(e) => setFormat(e.target.value as "pdf")}
               />
               <span>PDF</span>
             </label>
@@ -166,8 +172,8 @@ export function ReportForm() {
               <input
                 type="radio"
                 value="csv"
-                checked={format === 'csv'}
-                onChange={(e) => setFormat(e.target.value as 'csv')}
+                checked={format === "csv"}
+                onChange={(e) => setFormat(e.target.value as "csv")}
               />
               <span>CSV</span>
             </label>
@@ -181,4 +187,3 @@ export function ReportForm() {
     </div>
   );
 }
-

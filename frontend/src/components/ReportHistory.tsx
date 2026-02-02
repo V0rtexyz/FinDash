@@ -1,7 +1,7 @@
-import { useEffect } from 'react';
-import { useReport } from '../context/ReportContext';
-import { ReportService } from '../services/ReportService';
-import '../styles/ReportHistory.css';
+import { useEffect } from "react";
+import { useReport } from "../context/ReportContext";
+import { ReportService } from "../services/ReportService";
+import "../styles/ReportHistory.css";
 
 export function ReportHistory() {
   const { reports, loadReports, removeReport } = useReport();
@@ -11,14 +11,14 @@ export function ReportHistory() {
   }, [loadReports]);
 
   const handleDownload = (reportId: string) => {
-    const report = reports.find(r => r.id === reportId);
+    const report = reports.find((r) => r.id === reportId);
     if (report) {
       ReportService.downloadReport(report);
     }
   };
 
   const handleDelete = async (reportId: string) => {
-    if (window.confirm('Удалить этот отчёт?')) {
+    if (window.confirm("Удалить этот отчёт?")) {
       await removeReport(reportId);
     }
   };
@@ -57,10 +57,11 @@ export function ReportHistory() {
                 <td className="report-name">{report.name}</td>
                 <td>{report.params.currency}</td>
                 <td className="report-period">
-                  {report.params.startDate.toLocaleDateString('ru-RU')} - {report.params.endDate.toLocaleDateString('ru-RU')}
+                  {report.params.startDate.toLocaleDateString("ru-RU")} -{" "}
+                  {report.params.endDate.toLocaleDateString("ru-RU")}
                 </td>
                 <td>{report.params.interval}</td>
-                <td>{new Date(report.createdAt).toLocaleString('ru-RU')}</td>
+                <td>{new Date(report.createdAt).toLocaleString("ru-RU")}</td>
                 <td>
                   <span className={`format-badge ${report.format}`}>
                     {report.format.toUpperCase()}
@@ -90,4 +91,3 @@ export function ReportHistory() {
     </div>
   );
 }
-

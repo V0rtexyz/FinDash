@@ -1,19 +1,25 @@
-import { useState } from 'react';
-import { Layout } from './Layout';
-import { TrackingList } from './TrackingList';
-import { HistoryList } from './HistoryList';
-import { FavoritesList } from './FavoritesList';
-import { useCurrency } from '../context/CurrencyContext';
-import { CurrencyController } from '../services/CurrencyController';
-import '../styles/TrackingPage.css';
+import { useState } from "react";
+import { Layout } from "./Layout";
+import { TrackingList } from "./TrackingList";
+import { HistoryList } from "./HistoryList";
+import { FavoritesList } from "./FavoritesList";
+import { useCurrency } from "../context/CurrencyContext";
+import { CurrencyController } from "../services/CurrencyController";
+import "../styles/TrackingPage.css";
 
 export function TrackingPage() {
   const { currencies } = useCurrency();
   const [refreshHistory, setRefreshHistory] = useState(0);
   const [refreshFavorites, setRefreshFavorites] = useState(0);
-  const [notification, setNotification] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+  const [notification, setNotification] = useState<{
+    message: string;
+    type: "success" | "error";
+  } | null>(null);
 
-  const showNotification = (message: string, type: 'success' | 'error' = 'success') => {
+  const showNotification = (
+    message: string,
+    type: "success" | "error" = "success"
+  ) => {
     setNotification({ message, type });
     setTimeout(() => setNotification(null), 3000);
   };
@@ -21,32 +27,32 @@ export function TrackingPage() {
   const handleAddToHistory = async (symbol: string) => {
     const currency = currencies.get(symbol);
     if (!currency) {
-      showNotification('Валюта не найдена', 'error');
+      showNotification("Валюта не найдена", "error");
       return;
     }
 
     try {
       await CurrencyController.addToStorage(currency);
-      setRefreshHistory(prev => prev + 1);
+      setRefreshHistory((prev) => prev + 1);
       showNotification(`${currency.name} добавлена в историю`);
     } catch (error) {
-      showNotification('Ошибка при добавлении в историю', 'error');
+      showNotification("Ошибка при добавлении в историю", "error");
     }
   };
 
   const handleAddToFavorites = async (symbol: string) => {
     const currency = currencies.get(symbol);
     if (!currency) {
-      showNotification('Валюта не найдена', 'error');
+      showNotification("Валюта не найдена", "error");
       return;
     }
 
     try {
       await CurrencyController.addToFavorites(currency);
-      setRefreshFavorites(prev => prev + 1);
+      setRefreshFavorites((prev) => prev + 1);
       showNotification(`${currency.name} добавлена в избранное`);
     } catch (error) {
-      showNotification('Ошибка при добавлении в избранное', 'error');
+      showNotification("Ошибка при добавлении в избранное", "error");
     }
   };
 
@@ -85,10 +91,3 @@ export function TrackingPage() {
     </Layout>
   );
 }
-
-
-
-
-
-
-

@@ -1,5 +1,11 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { CurrencyAPI } from '../services/CurrencyAPI';
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from "react";
+import { CurrencyAPI } from "../services/CurrencyAPI";
 
 interface CurrencyInfo {
   symbol: string;
@@ -13,7 +19,9 @@ interface CurrencyListContextType {
   refreshCurrencies: () => Promise<void>;
 }
 
-const CurrencyListContext = createContext<CurrencyListContextType | undefined>(undefined);
+const CurrencyListContext = createContext<CurrencyListContextType | undefined>(
+  undefined
+);
 
 export function CurrencyListProvider({ children }: { children: ReactNode }) {
   const [currencies, setCurrencies] = useState<CurrencyInfo[]>([]);
@@ -23,12 +31,12 @@ export function CurrencyListProvider({ children }: { children: ReactNode }) {
   const loadCurrencies = async () => {
     try {
       // Проверяем кэш в sessionStorage
-      const cached = sessionStorage.getItem('available_currencies');
-      const cacheTime = sessionStorage.getItem('available_currencies_time');
+      const cached = sessionStorage.getItem("available_currencies");
+      const cacheTime = sessionStorage.getItem("available_currencies_time");
       const now = Date.now();
-      
+
       // Кэш валиден 1 час
-      if (cached && cacheTime && (now - parseInt(cacheTime)) < 3600000) {
+      if (cached && cacheTime && now - parseInt(cacheTime) < 3600000) {
         setCurrencies(JSON.parse(cached));
         setIsLoading(false);
         return;
@@ -37,23 +45,23 @@ export function CurrencyListProvider({ children }: { children: ReactNode }) {
       // Загружаем с сервера
       const data = await CurrencyAPI.fetchAvailableCurrencies();
       setCurrencies(data);
-      
+
       // Сохраняем в кэш
-      sessionStorage.setItem('available_currencies', JSON.stringify(data));
-      sessionStorage.setItem('available_currencies_time', now.toString());
+      sessionStorage.setItem("available_currencies", JSON.stringify(data));
+      sessionStorage.setItem("available_currencies_time", now.toString());
       setIsLoading(false);
       setError(null);
     } catch (err) {
-      console.error('Error loading currencies:', err);
-      setError('Не удалось загрузить список валют');
+      console.error("Error loading currencies:", err);
+      setError("Не удалось загрузить список валют");
       setIsLoading(false);
     }
   };
 
   const refreshCurrencies = async () => {
     // Очищаем кэш и перезагружаем
-    sessionStorage.removeItem('available_currencies');
-    sessionStorage.removeItem('available_currencies_time');
+    sessionStorage.removeItem("available_currencies");
+    sessionStorage.removeItem("available_currencies_time");
     setIsLoading(true);
     await loadCurrencies();
   };
@@ -79,9 +87,9 @@ export function CurrencyListProvider({ children }: { children: ReactNode }) {
 export function useCurrencyList() {
   const context = useContext(CurrencyListContext);
   if (context === undefined) {
-    throw new Error('useCurrencyList must be used within a CurrencyListProvider');
+    throw new Error(
+      "useCurrencyList must be used within a CurrencyListProvider"
+    );
   }
   return context;
 }
-
-
