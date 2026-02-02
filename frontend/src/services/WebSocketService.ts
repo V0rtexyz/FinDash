@@ -1,4 +1,4 @@
-import { CurrencyData, PricePoint } from './CurrencyAPI';
+import { CurrencyData, PricePoint } from "./CurrencyAPI";
 
 type MessageHandler = (data: CurrencyData) => void;
 
@@ -54,7 +54,7 @@ class WebSocketServiceClass {
 
       const handlers = this.handlers.get(symbol);
       if (handlers) {
-        handlers.forEach(handler => handler(data));
+        handlers.forEach((handler) => handler(data));
       }
     }, 2000);
 
@@ -85,13 +85,13 @@ class WebSocketServiceClass {
 
   private getCurrencyName(symbol: string): string {
     const names: Record<string, string> = {
-      BTC: 'Bitcoin',
-      ETH: 'Ethereum',
-      USDT: 'Tether',
-      BNB: 'Binance Coin',
-      XRP: 'Ripple',
-      SOL: 'Solana',
-      ADA: 'Cardano',
+      BTC: "Bitcoin",
+      ETH: "Ethereum",
+      USDT: "Tether",
+      BNB: "Binance Coin",
+      XRP: "Ripple",
+      SOL: "Solana",
+      ADA: "Cardano",
     };
     return names[symbol] || symbol;
   }
@@ -121,4 +121,3 @@ class WebSocketServiceClass {
 }
 
 export const WebSocketService = new WebSocketServiceClass();
-

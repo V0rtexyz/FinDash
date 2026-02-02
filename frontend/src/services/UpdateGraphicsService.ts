@@ -1,4 +1,4 @@
-import { CurrencyData, PricePoint } from './CurrencyAPI';
+import { CurrencyData, PricePoint } from "./CurrencyAPI";
 
 export interface ChartData {
   labels: string[];
@@ -22,12 +22,15 @@ class UpdateGraphicsServiceClass {
     }
 
     // Group data by day and get average price per day
-    const dailyData = new Map<string, { prices: number[], timestamp: number }>();
-    
-    currencyData.history.forEach(point => {
+    const dailyData = new Map<
+      string,
+      { prices: number[]; timestamp: number }
+    >();
+
+    currencyData.history.forEach((point) => {
       const date = new Date(point.timestamp);
-      const dateKey = date.toISOString().split('T')[0]; // YYYY-MM-DD
-      
+      const dateKey = date.toISOString().split("T")[0]; // YYYY-MM-DD
+
       if (!dailyData.has(dateKey)) {
         dailyData.set(dateKey, { prices: [], timestamp: point.timestamp });
       }
@@ -35,21 +38,22 @@ class UpdateGraphicsServiceClass {
     });
 
     // Sort by date and calculate average price per day
-    const sortedDates = Array.from(dailyData.entries()).sort((a, b) => 
+    const sortedDates = Array.from(dailyData.entries()).sort((a, b) =>
       a[0].localeCompare(b[0])
     );
 
     const labels = sortedDates.map(([dateKey]) => {
       const date = new Date(dateKey);
-      return date.toLocaleDateString('ru-RU', {
-        day: '2-digit',
-        month: '2-digit',
+      return date.toLocaleDateString("ru-RU", {
+        day: "2-digit",
+        month: "2-digit",
       });
     });
 
     const data = sortedDates.map(([, dayData]) => {
       // Use average price for the day
-      const avgPrice = dayData.prices.reduce((sum, p) => sum + p, 0) / dayData.prices.length;
+      const avgPrice =
+        dayData.prices.reduce((sum, p) => sum + p, 0) / dayData.prices.length;
       return avgPrice;
     });
 
@@ -59,8 +63,8 @@ class UpdateGraphicsServiceClass {
         {
           label: `${currencyData.name} (${currencyData.symbol})`,
           data,
-          borderColor: 'rgba(102, 126, 234, 1)',
-          backgroundColor: 'rgba(102, 126, 234, 0.1)',
+          borderColor: "rgba(102, 126, 234, 1)",
+          backgroundColor: "rgba(102, 126, 234, 0.1)",
           tension: 0.4,
           fill: true,
         },
@@ -77,26 +81,26 @@ class UpdateGraphicsServiceClass {
     }
 
     const colors = [
-      'rgba(102, 126, 234, 1)',
-      'rgba(118, 75, 162, 1)',
-      'rgba(72, 187, 120, 1)',
-      'rgba(237, 137, 54, 1)',
-      'rgba(214, 48, 49, 1)',
+      "rgba(102, 126, 234, 1)",
+      "rgba(118, 75, 162, 1)",
+      "rgba(72, 187, 120, 1)",
+      "rgba(237, 137, 54, 1)",
+      "rgba(214, 48, 49, 1)",
     ];
 
-    const maxLength = Math.max(...currencies.map(c => c.history.length));
-    const labels = currencies[0].history.map(point =>
-      new Date(point.timestamp).toLocaleTimeString('ru-RU', {
-        hour: '2-digit',
-        minute: '2-digit',
+    const maxLength = Math.max(...currencies.map((c) => c.history.length));
+    const labels = currencies[0].history.map((point) =>
+      new Date(point.timestamp).toLocaleTimeString("ru-RU", {
+        hour: "2-digit",
+        minute: "2-digit",
       })
     );
 
     const datasets = currencies.map((currency, index) => ({
       label: `${currency.name} (${currency.symbol})`,
-      data: currency.history.map(point => point.price),
+      data: currency.history.map((point) => point.price),
       borderColor: colors[index % colors.length],
-      backgroundColor: colors[index % colors.length].replace('1)', '0.1)'),
+      backgroundColor: colors[index % colors.length].replace("1)", "0.1)"),
       tension: 0.4,
       fill: false,
     }));
@@ -116,31 +120,31 @@ class UpdateGraphicsServiceClass {
     }
 
     const colors = [
-      'rgba(102, 126, 234, 1)',
-      'rgba(118, 75, 162, 1)',
-      'rgba(72, 187, 120, 1)',
-      'rgba(237, 137, 54, 1)',
-      'rgba(214, 48, 49, 1)',
+      "rgba(102, 126, 234, 1)",
+      "rgba(118, 75, 162, 1)",
+      "rgba(72, 187, 120, 1)",
+      "rgba(237, 137, 54, 1)",
+      "rgba(214, 48, 49, 1)",
     ];
 
-    const labels = currencies[0].history.map(point =>
-      new Date(point.timestamp).toLocaleTimeString('ru-RU', {
-        hour: '2-digit',
-        minute: '2-digit',
+    const labels = currencies[0].history.map((point) =>
+      new Date(point.timestamp).toLocaleTimeString("ru-RU", {
+        hour: "2-digit",
+        minute: "2-digit",
       })
     );
 
     const datasets = currencies.map((currency, index) => {
       const firstPrice = currency.history[0].price;
-      const normalizedData = currency.history.map(point => 
-        ((point.price - firstPrice) / firstPrice) * 100
+      const normalizedData = currency.history.map(
+        (point) => ((point.price - firstPrice) / firstPrice) * 100
       );
 
       return {
         label: `${currency.name} (${currency.symbol})`,
         data: normalizedData,
         borderColor: colors[index % colors.length],
-        backgroundColor: colors[index % colors.length].replace('1)', '0.1)'),
+        backgroundColor: colors[index % colors.length].replace("1)", "0.1)"),
         tension: 0.4,
         fill: false,
       };
@@ -154,4 +158,3 @@ class UpdateGraphicsServiceClass {
 }
 
 export const UpdateGraphicsService = new UpdateGraphicsServiceClass();
-

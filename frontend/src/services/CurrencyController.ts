@@ -1,6 +1,6 @@
-import { CurrencyData } from './CurrencyAPI';
-import { StorageService, StorageItem, FavoriteItem } from './StorageService';
-import { WebSocketService } from './WebSocketService';
+import { CurrencyData } from "./CurrencyAPI";
+import { StorageService, StorageItem, FavoriteItem } from "./StorageService";
+import { WebSocketService } from "./WebSocketService";
 
 type ChangeListener = () => void;
 
@@ -15,7 +15,7 @@ class CurrencyControllerClass {
   }
 
   private notifyListeners(): void {
-    this.listeners.forEach(listener => listener());
+    this.listeners.forEach((listener) => listener());
   }
 
   async getTrackedCurrencies(): Promise<CurrencyData[]> {
@@ -57,11 +57,12 @@ class CurrencyControllerClass {
     return await StorageService.isFavorite(symbol);
   }
 
-  subscribeToUpdates(symbol: string, callback: (data: CurrencyData) => void): () => void {
+  subscribeToUpdates(
+    symbol: string,
+    callback: (data: CurrencyData) => void
+  ): () => void {
     return WebSocketService.subscribe(symbol, callback);
   }
 }
 
 export const CurrencyController = new CurrencyControllerClass();
-
-

@@ -1,4 +1,4 @@
-import { CurrencyData } from './CurrencyAPI';
+import { CurrencyData } from "./CurrencyAPI";
 
 export interface StorageItem {
   id: string;
@@ -13,8 +13,8 @@ export interface FavoriteItem {
 }
 
 class StorageServiceClass {
-  private readonly STORAGE_KEY = 'currency_history';
-  private readonly FAVORITES_KEY = 'currency_favorites';
+  private readonly STORAGE_KEY = "currency_history";
+  private readonly FAVORITES_KEY = "currency_favorites";
 
   async getStorage(): Promise<StorageItem[]> {
     try {
@@ -34,7 +34,9 @@ class StorageServiceClass {
   async addToStorage(currency: CurrencyData): Promise<void> {
     const history = await this.getStorage();
 
-    const exists = history.find(item => item.currency.symbol === currency.symbol);
+    const exists = history.find(
+      (item) => item.currency.symbol === currency.symbol
+    );
     if (exists) {
       return;
     }
@@ -53,7 +55,7 @@ class StorageServiceClass {
 
   async removeFromStorage(itemId: string): Promise<void> {
     const history = await this.getStorage();
-    const filtered = history.filter(item => item.id !== itemId);
+    const filtered = history.filter((item) => item.id !== itemId);
     localStorage.setItem(this.STORAGE_KEY, JSON.stringify(filtered));
   }
 
@@ -79,7 +81,9 @@ class StorageServiceClass {
   async addToFavorites(currency: CurrencyData): Promise<void> {
     const favorites = await this.getFavorites();
 
-    const exists = favorites.find(item => item.currency.symbol === currency.symbol);
+    const exists = favorites.find(
+      (item) => item.currency.symbol === currency.symbol
+    );
     if (exists) {
       return;
     }
@@ -98,7 +102,7 @@ class StorageServiceClass {
 
   async removeFromFavorites(itemId: string): Promise<void> {
     const favorites = await this.getFavorites();
-    const filtered = favorites.filter(item => item.id !== itemId);
+    const filtered = favorites.filter((item) => item.id !== itemId);
     localStorage.setItem(this.FAVORITES_KEY, JSON.stringify(filtered));
   }
 
@@ -108,10 +112,8 @@ class StorageServiceClass {
 
   async isFavorite(symbol: string): Promise<boolean> {
     const favorites = await this.getFavorites();
-    return favorites.some(item => item.currency.symbol === symbol);
+    return favorites.some((item) => item.currency.symbol === symbol);
   }
 }
 
 export const StorageService = new StorageServiceClass();
-
-
