@@ -1,22 +1,22 @@
 .currency-card {
-  background: rgba(255, 255, 255, 0.95);
+  background: rgb(255, 255, 255, 0.95);
   border-radius: 12px;
   padding: 16px;
   cursor: pointer;
   transition: all 0.3s ease;
   border: 2px solid transparent;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 8px rgb(0, 0, 0, 0.08);
 }
 
 .currency-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
-  border-color: rgba(102, 126, 234, 0.3);
+  box-shadow: 0 4px 12px rgb(0, 0, 0, 0.12);
+  border-color: rgb(102, 126, 234, 0.3);
 }
 
 .currency-card.selected {
   border-color: #667eea;
-  box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 4px 16px rgb(102, 126, 234, 0.3);
 }
 
 .card-header {
@@ -44,7 +44,7 @@
 }
 
 .remove-button {
-  background: rgba(214, 48, 49, 0.1);
+  background: rgb(214, 48, 49, 0.1);
   color: #c53030;
   border: none;
   width: 24px;
@@ -61,7 +61,7 @@
 }
 
 .remove-button:hover {
-  background: rgba(214, 48, 49, 0.2);
+  background: rgb(214, 48, 49, 0.2);
   transform: scale(1.1);
 }
 
@@ -88,12 +88,12 @@
 
 .change-display.positive {
   color: #38a169;
-  background: rgba(72, 187, 120, 0.1);
+  background: rgb(72, 187, 120, 0.1);
 }
 
 .change-display.negative {
   color: #c53030;
-  background: rgba(214, 48, 49, 0.1);
+  background: rgb(214, 48, 49, 0.1);
 }
 
 .card-footer {

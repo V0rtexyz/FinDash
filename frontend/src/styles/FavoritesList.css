@@ -1,8 +1,8 @@
 .favorites-list-container {
-  background: rgba(255, 255, 255, 0.95);
+  background: rgb(255, 255, 255, 0.95);
   border-radius: 16px;
   padding: 24px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgb(0, 0, 0, 0.1);
   backdrop-filter: blur(10px);
   max-height: 600px;
   overflow-y: auto;
@@ -26,7 +26,7 @@
 
 .favorite-card:hover {
   border-color: #ed8936;
-  box-shadow: 0 4px 12px rgba(237, 137, 54, 0.15);
+  box-shadow: 0 4px 12px rgb(237, 137, 54, 0.15);
   transform: translateY(-4px);
 }
 
@@ -34,7 +34,7 @@
   position: absolute;
   top: 8px;
   right: 8px;
-  background: rgba(214, 48, 49, 0.1);
+  background: rgb(214, 48, 49, 0.1);
   color: #c53030;
   border: none;
   width: 24px;
@@ -56,7 +56,7 @@
 }
 
 .favorite-card .remove-btn:hover {
-  background: rgba(214, 48, 49, 0.2);
+  background: rgb(214, 48, 49, 0.2);
   transform: scale(1.1);
 }
 
@@ -104,12 +104,12 @@
 
 .favorite-card .currency-change.positive {
   color: #38a169;
-  background: rgba(72, 187, 120, 0.1);
+  background: rgb(72, 187, 120, 0.1);
 }
 
 .favorite-card .currency-change.negative {
   color: #c53030;
-  background: rgba(214, 48, 49, 0.1);
+  background: rgb(214, 48, 49, 0.1);
 }
 
 .favorite-card .added-time {

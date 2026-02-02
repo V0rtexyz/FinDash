@@ -1,8 +1,8 @@
 .report-history-container {
-  background: rgba(255, 255, 255, 0.95);
+  background: rgb(255, 255, 255, 0.95);
   border-radius: 16px;
   padding: 24px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgb(0, 0, 0, 0.1);
   backdrop-filter: blur(10px);
 }
 
@@ -82,12 +82,12 @@
 }
 
 .format-badge.pdf {
-  background: rgba(214, 48, 49, 0.1);
+  background: rgb(214, 48, 49, 0.1);
   color: #c53030;
 }
 
 .format-badge.csv {
-  background: rgba(72, 187, 120, 0.1);
+  background: rgb(72, 187, 120, 0.1);
   color: #38a169;
 }
 
@@ -112,23 +112,23 @@
 }
 
 .action-button.download {
-  background: rgba(102, 126, 234, 0.1);
+  background: rgb(102, 126, 234, 0.1);
   color: #667eea;
 }
 
 .action-button.download:hover {
-  background: rgba(102, 126, 234, 0.2);
+  background: rgb(102, 126, 234, 0.2);
   transform: scale(1.1);
 }
 
 .action-button.delete {
-  background: rgba(214, 48, 49, 0.1);
+  background: rgb(214, 48, 49, 0.1);
   color: #c53030;
   font-size: 24px;
 }
 
 .action-button.delete:hover {
-  background: rgba(214, 48, 49, 0.2);
+  background: rgb(214, 48, 49, 0.2);
   transform: scale(1.1);
 }
 

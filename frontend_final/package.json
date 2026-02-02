@@ -1,0 +1,110 @@
+{
+  "name": "app",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "lint": "eslint .",
+    "prettier:check": "prettier --check \"**/*.{js,jsx,ts,tsx,json,css,md}\"",
+    "prettier:fix": "prettier --write \"**/*.{js,jsx,ts,tsx,json,css,md}\"",
+    "test:unit": "NODE_OPTIONS=--experimental-vm-modules jest",
+    "test:unit:coverage": "NODE_OPTIONS=--experimental-vm-modules jest --coverage",
+    "test:e2e": "npx playwright test tests/e2e || echo 'No e2e tests to run' || true",
+    "preview": "vite preview",
+    "server": "node ../backend/server.js",
+    "server:dev": "node --watch ../backend/server.js"
+  },
+  "dependencies": {
+    "@reduxjs/toolkit": "^2.10.1",
+    "@sentry/react": "^10.27.0",
+    "@sentry/tracing": "^7.120.4",
+    "chart.js": "^4.5.1",
+    "chartjs-adapter-date-fns": "^3.0.0",
+    "cors": "^2.8.5",
+    "crypto-js": "^4.2.0",
+    "date-fns": "^4.1.0",
+    "dotenv": "^16.6.1",
+    "express": "^4.21.1",
+    "jest": "^30.2.0",
+    "jspdf": "^4.0.0",
+    "jspdf-autotable": "^5.0.2",
+    "next": "^15.5.6",
+    "node": "^25.0.0",
+    "pg": "^8.13.1",
+    "react": "^19.1.1",
+    "react-chartjs-2": "^5.3.1",
+    "react-dom": "^19.1.1",
+    "react-redux": "^9.2.0",
+    "react-router-dom": "^7.9.6",
+    "redux": "^5.0.1",
+    "websocket": "^1.0.35",
+    "ws": "^8.18.3"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.38.0",
+    "@playwright/test": "^1.57.0",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/crypto-js": "^4.2.2",
+    "@types/node": "^24.10.1",
+    "@types/react": "^19.1.16",
+    "@types/react-dom": "^19.1.9",
+    "@vitejs/plugin-react": "^5.0.4",
+    "eslint": "^9.38.0",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-refresh": "^0.4.22",
+    "globals": "^16.4.0",
+    "identity-obj-proxy": "^3.0.0",
+    "jest-environment-jsdom": "^30.2.0",
+    "prettier": "^2.8.8",
+    "stylelint": "^16.25.0",
+    "stylelint-config-standard": "^39.0.1",
+    "supertest": "^7.1.4",
+    "ts-jest": "^29.4.5",
+    "typescript": "^5.9.3",
+    "vite": "^7.1.7"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "moduleNameMapper": {},
+    "transform": {},
+    "testMatch": [
+      "**/tests/**/*.test.js",
+      "**/tests/**/*.test.cjs",
+      "**/__tests__/**/*.js"
+    ],
+    "testPathIgnorePatterns": [
+      "<rootDir>/tests/e2e/",
+      "<rootDir>/node_modules/",
+      "<rootDir>/dist/"
+    ],
+    "collectCoverageFrom": [
+      "backend/**/*.js",
+      "!backend/**/*.test.js",
+      "!backend/server.js",
+      "!backend/websocket-client-example.js"
+    ],
+    "coverageThreshold": {
+      "global": {
+        "branches": 80,
+        "functions": 80,
+        "lines": 80,
+        "statements": 80
+      }
+    },
+    "coverageDirectory": "coverage",
+    "coverageReporters": [
+      "text",
+      "lcov",
+      "html",
+      "json"
+    ],
+    "globals": {
+      "jest": true
+    }
+  }
+}

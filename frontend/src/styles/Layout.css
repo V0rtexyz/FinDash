@@ -4,12 +4,12 @@
 }
 
 .layout-header {
-  background: rgba(255, 255, 255, 0.95);
+  background: rgb(255, 255, 255, 0.95);
   padding: 20px 48px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgb(0, 0, 0, 0.1);
   backdrop-filter: blur(10px);
   gap: 32px;
 }
@@ -45,14 +45,14 @@
 }
 
 .nav-button:hover {
-  background: rgba(102, 126, 234, 0.1);
+  background: rgb(102, 126, 234, 0.1);
   color: #667eea;
 }
 
 .nav-button.active {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: #ffffff;
-  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 2px 8px rgb(102, 126, 234, 0.3);
 }
 
 .layout-user {
@@ -78,13 +78,13 @@
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 2px 8px rgb(102, 126, 234, 0.3);
   white-space: nowrap;
 }
 
 .logout-button:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 4px 12px rgb(102, 126, 234, 0.4);
 }
 
 .layout-content {

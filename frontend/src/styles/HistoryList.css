@@ -1,8 +1,8 @@
 .history-list-container {
-  background: rgba(255, 255, 255, 0.95);
+  background: rgb(255, 255, 255, 0.95);
   border-radius: 16px;
   padding: 24px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgb(0, 0, 0, 0.1);
   backdrop-filter: blur(10px);
   max-height: 600px;
   overflow-y: auto;
@@ -24,7 +24,7 @@
 
 .history-item:hover {
   border-color: #cbd5e0;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 8px rgb(0, 0, 0, 0.08);
 }
 
 .item-main {
@@ -73,12 +73,12 @@
 
 .currency-change.positive {
   color: #38a169;
-  background: rgba(72, 187, 120, 0.1);
+  background: rgb(72, 187, 120, 0.1);
 }
 
 .currency-change.negative {
   color: #c53030;
-  background: rgba(214, 48, 49, 0.1);
+  background: rgb(214, 48, 49, 0.1);
 }
 
 .item-footer {
@@ -95,7 +95,7 @@
 }
 
 .remove-btn {
-  background: rgba(214, 48, 49, 0.1);
+  background: rgb(214, 48, 49, 0.1);
   color: #c53030;
   border: none;
   width: 28px;
@@ -112,7 +112,7 @@
 }
 
 .remove-btn:hover {
-  background: rgba(214, 48, 49, 0.2);
+  background: rgb(214, 48, 49, 0.2);
   transform: scale(1.1);
 }
 

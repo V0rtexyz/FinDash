@@ -1,8 +1,8 @@
 .tracking-list-container {
-  background: rgba(255, 255, 255, 0.95);
+  background: rgb(255, 255, 255, 0.95);
   border-radius: 16px;
   padding: 24px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgb(0, 0, 0, 0.1);
   backdrop-filter: blur(10px);
 }
 
@@ -67,7 +67,7 @@
 
 .tracking-item:hover {
   border-color: #667eea;
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+  box-shadow: 0 4px 12px rgb(102, 126, 234, 0.15);
 }
 
 .item-header {
@@ -103,12 +103,12 @@
 
 .currency-change.positive {
   color: #38a169;
-  background: rgba(72, 187, 120, 0.1);
+  background: rgb(72, 187, 120, 0.1);
 }
 
 .currency-change.negative {
   color: #c53030;
-  background: rgba(214, 48, 49, 0.1);
+  background: rgb(214, 48, 49, 0.1);
 }
 
 .item-price {
@@ -146,32 +146,32 @@
 }
 
 .action-btn.history {
-  background: rgba(102, 126, 234, 0.1);
+  background: rgb(102, 126, 234, 0.1);
   color: #667eea;
 }
 
 .action-btn.history:hover {
-  background: rgba(102, 126, 234, 0.2);
+  background: rgb(102, 126, 234, 0.2);
   transform: translateY(-2px);
 }
 
 .action-btn.favorite {
-  background: rgba(237, 137, 54, 0.1);
+  background: rgb(237, 137, 54, 0.1);
   color: #ed8936;
 }
 
 .action-btn.favorite:hover {
-  background: rgba(237, 137, 54, 0.2);
+  background: rgb(237, 137, 54, 0.2);
   transform: translateY(-2px);
 }
 
 .action-btn.remove {
-  background: rgba(214, 48, 49, 0.1);
+  background: rgb(214, 48, 49, 0.1);
   color: #c53030;
 }
 
 .action-btn.remove:hover {
-  background: rgba(214, 48, 49, 0.2);
+  background: rgb(214, 48, 49, 0.2);
   transform: translateY(-2px);
 }
 
