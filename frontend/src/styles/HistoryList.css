@@ -1,0 +1,123 @@
+.history-list-container {
+  background: rgb(255, 255, 255, 0.95);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 4px 12px rgb(0, 0, 0, 0.1);
+  backdrop-filter: blur(10px);
+  max-height: 600px;
+  overflow-y: auto;
+}
+
+.history-items {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.history-item {
+  padding: 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  background: #ffffff;
+  transition: all 0.2s ease;
+}
+
+.history-item:hover {
+  border-color: #cbd5e0;
+  box-shadow: 0 2px 8px rgb(0, 0, 0, 0.08);
+}
+
+.item-main {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.currency-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.currency-symbol {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1a202c;
+}
+
+.currency-name {
+  font-size: 13px;
+  color: #718096;
+}
+
+.price-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.currency-price {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1a202c;
+}
+
+.currency-change {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+
+.currency-change.positive {
+  color: #38a169;
+  background: rgb(72, 187, 120, 0.1);
+}
+
+.currency-change.negative {
+  color: #c53030;
+  background: rgb(214, 48, 49, 0.1);
+}
+
+.item-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 12px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.added-time {
+  font-size: 11px;
+  color: #a0aec0;
+}
+
+.remove-btn {
+  background: rgb(214, 48, 49, 0.1);
+  color: #c53030;
+  border: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  font-size: 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  line-height: 1;
+}
+
+.remove-btn:hover {
+  background: rgb(214, 48, 49, 0.2);
+  transform: scale(1.1);
+}
+
+@media (max-width: 640px) {
+  .history-list-container {
+    max-height: none;
+  }
+}
