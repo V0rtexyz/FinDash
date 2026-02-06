@@ -1,0 +1,155 @@
+import express from "express";
+
+const router = express.Router();
+
+/**
+ * GET /api/currencies
+ * Get list of available currencies
+ */
+router.get("/", async (req, res) => {
+  try {
+    const coinLayerService = req.app.get("coinLayerService");
+    const result = await coinLayerService.getCurrenciesList();
+
+    if (result.success) {
+      res.json({
+        success: true,
+        currencies: result.currencies,
+      });
+    } else {
+      res.status(500).json({
+        success: false,
+        message: result.error || "Failed to fetch currencies",
+      });
+    }
+  } catch (error) {
+    console.error("Get currencies error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+});
+
+/**
+ * GET /api/currencies/rates
+ * Get live exchange rates
+ * Query params: symbols (comma-separated)
+ */
+router.get("/rates", async (req, res) => {
+  try {
+    const symbols = req.query.symbols
+      ? req.query.symbols.split(",").map((s) => s.trim())
+      : [];
+
+    const coinLayerService = req.app.get("coinLayerService");
+    const result = await coinLayerService.getLiveRates(symbols);
+
+    res.json({
+      success: result.success,
+      timestamp: result.timestamp,
+      rates: result.rates,
+      target: result.target,
+      error: result.error,
+    });
+  } catch (error) {
+    console.error("Get rates error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+});
+
+/**
+ * GET /api/currencies/historical/:date
+ * Get historical exchange rates for a specific date
+ * Query params: symbols (comma-separated)
+ */
+router.get("/historical/:date", async (req, res) => {
+  try {
+    const { date } = req.params;
+    const symbols = req.query.symbols
+      ? req.query.symbols.split(",").map((s) => s.trim())
+      : [];
+
+    // Validate date format (YYYY-MM-DD)
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid date format. Use YYYY-MM-DD",
+      });
+    }
+
+    const coinLayerService = req.app.get("coinLayerService");
+    const result = await coinLayerService.getHistoricalRates(date, symbols);
+
+    res.json({
+      success: result.success,
+      date: result.date,
+      rates: result.rates,
+      target: result.target,
+      error: result.error,
+    });
+  } catch (error) {
+    console.error("Get historical rates error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+});
+
+/**
+ * GET /api/currencies/timeseries/:symbol
+ * Get time series data for a currency
+ * Query params: startDate, endDate (YYYY-MM-DD format)
+ */
+router.get("/timeseries/:symbol", async (req, res) => {
+  try {
+    const { symbol } = req.params;
+    const { startDate, endDate } = req.query;
+
+    if (!startDate || !endDate) {
+      return res.status(400).json({
+        success: false,
+        message: "startDate and endDate query parameters are required",
+      });
+    }
+
+    // Validate date format
+    if (
+      !/^\d{4}-\d{2}-\d{2}$/.test(startDate) ||
+      !/^\d{4}-\d{2}-\d{2}$/.test(endDate)
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid date format. Use YYYY-MM-DD",
+      });
+    }
+
+    const coinLayerService = req.app.get("coinLayerService");
+    const result = await coinLayerService.getTimeSeries(
+      symbol,
+      startDate,
+      endDate
+    );
+
+    res.json({
+      success: result.success,
+      symbol: result.symbol,
+      startDate: result.startDate,
+      endDate: result.endDate,
+      rates: result.rates,
+      error: result.error,
+    });
+  } catch (error) {
+    console.error("Get time series error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+});
+
+export default router;
