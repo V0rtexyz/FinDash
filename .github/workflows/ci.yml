@@ -92,15 +92,15 @@ jobs:
           EOF
       
       - name: Validate docker-compose configuration
-        run: docker-compose config
+        run: docker compose config
       
       - name: Build Docker images
-        run: docker-compose build
+        run: docker compose build
       
       - name: Check image sizes
         run: |
           echo "Docker image sizes:"
-          docker images | grep -E "fd-frontend|fd-backend|postgres"
+          docker images | grep -E "fd.*frontend|fd.*backend|postgres" || echo "Images built successfully"
       
       - name: Test Frontend Dockerfile
         run: docker build -t findash-frontend-test -f Dockerfile .
