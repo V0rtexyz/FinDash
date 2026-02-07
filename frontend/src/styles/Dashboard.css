@@ -1,19 +1,27 @@
 .dashboard-content {
   padding: 32px;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  box-sizing: border-box;
 }
 
 .dashboard-grid {
   display: grid;
-  grid-template-columns: 350px 1fr;
+  grid-template-columns: minmax(280px, 350px) 1fr;
   gap: 32px;
   max-width: 1600px;
   margin: 0 auto;
+  width: 100%;
 }
 
 .sidebar {
   display: flex;
   flex-direction: column;
   gap: 24px;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
 }
 
 .currencies-list {
@@ -22,6 +30,9 @@
   padding: 24px;
   box-shadow: 0 4px 12px rgb(0, 0, 0, 0.1);
   backdrop-filter: blur(10px);
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .currencies-title {
@@ -51,6 +62,9 @@
 .main-content {
   display: flex;
   flex-direction: column;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
 }
 
 @media (max-width: 1200px) {
@@ -67,6 +81,16 @@
   }
 }
 
+@media (max-width: 900px) {
+  .dashboard-content {
+    padding: 24px 20px;
+  }
+
+  .dashboard-grid {
+    gap: 24px;
+  }
+}
+
 @media (max-width: 768px) {
   .dashboard-header {
     padding: 20px 24px;
@@ -79,10 +103,20 @@
   }
 
   .dashboard-content {
-    padding: 20px;
+    padding: 20px 16px;
   }
 
   .dashboard-grid {
     gap: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .dashboard-content {
+    padding: 16px 12px;
+  }
+
+  .dashboard-grid {
+    gap: 16px;
   }
 }

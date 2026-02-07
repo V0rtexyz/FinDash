@@ -4,6 +4,10 @@
   padding: 24px;
   box-shadow: 0 4px 12px rgb(0, 0, 0, 0.1);
   backdrop-filter: blur(10px);
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden;
 }
 
 .chart-header {
@@ -57,6 +61,8 @@
 .chart-container {
   height: 400px;
   position: relative;
+  width: 100%;
+  max-width: 100%;
 }
 
 .empty-state {
@@ -88,6 +94,10 @@
 }
 
 @media (max-width: 768px) {
+  .charts-view {
+    padding: 20px;
+  }
+
   .chart-header {
     flex-direction: column;
     align-items: flex-start;
@@ -120,5 +130,24 @@
 
   .empty-state p {
     font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .charts-view {
+    padding: 16px;
+  }
+
+  .chart-container {
+    height: 250px;
+  }
+
+  .current-price {
+    font-size: 18px;
+  }
+
+  .price-change {
+    font-size: 13px;
+    padding: 4px 8px;
   }
 }
