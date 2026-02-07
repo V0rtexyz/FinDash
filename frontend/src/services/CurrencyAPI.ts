@@ -30,11 +30,46 @@ interface TimeSeriesResponse {
   symbol: string;
   startDate: string;
   endDate: string;
-  rates: Array<{ date: string; rate: number }>;
+  rates: Array<{ date: string; rate: number }> | Record<string, number | null>;
   error?: string;
 }
 
 const API_BASE_URL = "/api";
+
+// Backend returns rates as object { "2024-01-01": 1.5 } or array [{ date, rate }]
+function ratesToHistory(
+  rates: Array<{ date: string; rate: number }> | Record<string, number | null>
+): PricePoint[] {
+  let points: PricePoint[];
+  if (Array.isArray(rates)) {
+    points = rates.map((point) => ({
+      timestamp: new Date(point.date).getTime(),
+      price: point.rate,
+    }));
+  } else {
+    points = Object.entries(rates)
+      .filter(([, rate]) => rate != null)
+      .map(([date, price]) => ({
+        timestamp: new Date(date).getTime(),
+        price: price as number,
+      }));
+  }
+  points.sort((a, b) => a.timestamp - b.timestamp);
+
+  // Заменяем нулевые значения на ближайшее ненулевое (forward/backward fill)
+  let lastGood = 0;
+  for (let i = 0; i < points.length; i++) {
+    if (points[i].price > 0) lastGood = points[i].price;
+    else if (lastGood > 0) points[i].price = lastGood;
+  }
+  lastGood = 0;
+  for (let i = points.length - 1; i >= 0; i--) {
+    if (points[i].price > 0) lastGood = points[i].price;
+    else if (lastGood > 0) points[i].price = lastGood;
+  }
+
+  return points;
+}
 
 class CurrencyAPIService {
   async fetchCurrencyData(
@@ -82,10 +117,7 @@ class CurrencyAPIService {
             await timeseriesResponse.json();
 
           if (timeseriesData.success && timeseriesData.rates) {
-            history = timeseriesData.rates.map((point) => ({
-              timestamp: new Date(point.date).getTime(),
-              price: point.rate,
-            }));
+            history = ratesToHistory(timeseriesData.rates);
 
             // Calculate 24h change
             if (history.length >= 2) {
@@ -190,10 +222,7 @@ class CurrencyAPIService {
           await timeseriesResponse.json();
 
         if (timeseriesData.success && timeseriesData.rates) {
-          history = timeseriesData.rates.map((point) => ({
-            timestamp: new Date(point.date).getTime(),
-            price: point.rate,
-          }));
+          history = ratesToHistory(timeseriesData.rates);
 
           // Calculate change based on period
           if (history.length >= 2) {

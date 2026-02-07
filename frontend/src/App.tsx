@@ -10,6 +10,7 @@ import { Dashboard } from "./components/Dashboard";
 import { TrackingPage } from "./components/TrackingPage";
 import { ReportsPage } from "./components/ReportsPage";
 import { PrivateRoute } from "./components/PrivateRoute";
+import { YandexMetrika } from "./components/YandexMetrika";
 import "./index.css";
 
 function App() {
@@ -20,6 +21,7 @@ function App() {
           <CurrencyProvider>
             <ReportProvider>
               <BrowserRouter>
+                <YandexMetrika />
                 <Routes>
                   <Route path="/" element={<AuthView />} />
                   <Route
