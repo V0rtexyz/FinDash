@@ -75,6 +75,103 @@
   display: none;
 }
 
+/* Timer Section */
+.timer-section {
+  padding: 12px 24px;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+  border-radius: 12px;
+  margin: 0 24px 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border: 1px solid rgba(102, 126, 234, 0.2);
+}
+
+.timer-display {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.timer-icon {
+  font-size: 24px;
+  filter: grayscale(0%);
+}
+
+.timer-time {
+  font-size: 28px;
+  font-weight: 700;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-variant-numeric: tabular-nums;
+  min-width: 80px;
+}
+
+.timer-controls {
+  display: flex;
+  gap: 8px;
+}
+
+.timer-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 2px solid rgba(102, 126, 234, 0.3);
+  background: white;
+  color: #667eea;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.timer-btn:hover {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  transform: scale(1.05);
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+.timer-btn:active {
+  transform: scale(0.95);
+}
+
+.reset-btn {
+  color: #c53030;
+  border-color: rgba(197, 48, 48, 0.3);
+}
+
+.reset-btn:hover {
+  background: #c53030;
+  color: white;
+  box-shadow: 0 2px 8px rgba(197, 48, 48, 0.3);
+}
+
+.timer-toggle-btn {
+  background: transparent;
+  border: none;
+  font-size: 18px;
+  color: #4a5568;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.timer-toggle-btn:hover {
+  background: rgba(102, 126, 234, 0.1);
+  color: #667eea;
+}
+
 /* Progress Section */
 .progress-section {
   padding: 8px 24px 0;
@@ -499,6 +596,20 @@
   .playlist {
     width: 95%;
   }
+
+  .timer-section {
+    margin: 0 16px 8px;
+    padding: 10px 16px;
+  }
+
+  .timer-time {
+    font-size: 24px;
+    min-width: 70px;
+  }
+
+  .timer-icon {
+    font-size: 20px;
+  }
 }
 
 @media (max-width: 480px) {
@@ -535,10 +646,33 @@
 
   .playlist-btn,
   .minimize-btn,
-  .close-player-btn {
+  .close-player-btn,
+  .timer-toggle-btn {
     font-size: 16px;
     width: 28px;
     height: 28px;
+  }
+
+  .timer-section {
+    margin: 0 12px 8px;
+    padding: 8px 12px;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .timer-time {
+    font-size: 20px;
+    min-width: 60px;
+  }
+
+  .timer-icon {
+    font-size: 18px;
+  }
+
+  .timer-btn {
+    width: 32px;
+    height: 32px;
+    font-size: 14px;
   }
 }
 

@@ -40,6 +40,13 @@ export function MusicPlayer() {
   const [isMinimized, setIsMinimized] = useState(false);
   const [isOpen, setIsOpen] = useState(false); // Скрыт по умолчанию
   const [error, setError] = useState<string>('');
+  
+  // Таймер
+  const [timerSeconds, setTimerSeconds] = useState(0);
+  const [isTimerRunning, setIsTimerRunning] = useState(false);
+  const [showTimer, setShowTimer] = useState(false);
+  const timerIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  
   const audioRef = useRef<HTMLAudioElement>(null);
 
   const currentTrack = demoTracks[currentTrackIndex];
@@ -78,6 +85,26 @@ export function MusicPlayer() {
       audio.volume = volume;
     }
   }, [volume]);
+
+  // Таймер effect
+  useEffect(() => {
+    if (isTimerRunning) {
+      timerIntervalRef.current = setInterval(() => {
+        setTimerSeconds(prev => prev + 1);
+      }, 1000);
+    } else {
+      if (timerIntervalRef.current) {
+        clearInterval(timerIntervalRef.current);
+        timerIntervalRef.current = null;
+      }
+    }
+
+    return () => {
+      if (timerIntervalRef.current) {
+        clearInterval(timerIntervalRef.current);
+      }
+    };
+  }, [isTimerRunning]);
 
   const togglePlay = async () => {
     const audio = audioRef.current;
@@ -162,6 +189,26 @@ export function MusicPlayer() {
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   };
 
+  const formatTimerTime = (seconds: number) => {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+    
+    if (hours > 0) {
+      return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    }
+    return `${minutes}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const toggleTimer = () => {
+    setIsTimerRunning(!isTimerRunning);
+  };
+
+  const resetTimer = () => {
+    setIsTimerRunning(false);
+    setTimerSeconds(0);
+  };
+
   return (
     <>
       {/* Плавающая кнопка */}
@@ -207,6 +254,32 @@ export function MusicPlayer() {
                       )}
                     </div>
                   ))}
+                </div>
+              </div>
+            )}
+
+            {/* Timer Section */}
+            {showTimer && (
+              <div className="timer-section">
+                <div className="timer-display">
+                  <span className="timer-icon">⏱️</span>
+                  <span className="timer-time">{formatTimerTime(timerSeconds)}</span>
+                </div>
+                <div className="timer-controls">
+                  <button
+                    className="timer-btn"
+                    onClick={toggleTimer}
+                    aria-label={isTimerRunning ? 'Остановить таймер' : 'Запустить таймер'}
+                  >
+                    {isTimerRunning ? '⏸' : '▶'}
+                  </button>
+                  <button
+                    className="timer-btn reset-btn"
+                    onClick={resetTimer}
+                    aria-label="Сбросить таймер"
+                  >
+                    ↻
+                  </button>
                 </div>
               </div>
             )}
@@ -278,6 +351,14 @@ export function MusicPlayer() {
                 aria-label="Громкость"
               />
             </div>
+            <button
+              className="timer-toggle-btn"
+              onClick={() => setShowTimer(!showTimer)}
+              aria-label={showTimer ? 'Скрыть таймер' : 'Показать таймер'}
+              title="Таймер"
+            >
+              ⏱
+            </button>
             <button
               className="playlist-btn"
               onClick={() => setShowPlaylist(!showPlaylist)}
