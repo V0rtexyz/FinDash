@@ -42,9 +42,16 @@ class ReportServiceClass {
     startDate: Date,
     endDate: Date
   ): PricePoint[] {
+    // Нормализуем даты к началу/концу дня в UTC
+    const startOfDay = new Date(startDate);
+    startOfDay.setUTCHours(0, 0, 0, 0);
+
+    const endOfDay = new Date(endDate);
+    endOfDay.setUTCHours(23, 59, 59, 999);
+
     return history.filter((point) => {
       const pointDate = new Date(point.timestamp);
-      return pointDate >= startDate && pointDate <= endDate;
+      return pointDate >= startOfDay && pointDate <= endOfDay;
     });
   }
 

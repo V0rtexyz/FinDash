@@ -43,8 +43,11 @@ export function ReportForm() {
     e.preventDefault();
     setError(null);
 
-    const start = new Date(startDate);
-    const end = new Date(endDate);
+    // Создаем даты в UTC с явным указанием времени
+    // startDate: начало дня (00:00:00.000)
+    // endDate: конец дня (23:59:59.999)
+    const start = new Date(startDate + "T00:00:00.000Z");
+    const end = new Date(endDate + "T23:59:59.999Z");
 
     if (start > end) {
       setError("Начальная дата не может быть позже конечной");

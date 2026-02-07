@@ -151,13 +151,23 @@ export default class CoinLayerService {
   // Helper methods
   getDateRange(startDate, endDate) {
     const dates = [];
-    const start = new Date(startDate);
-    const end = new Date(endDate);
+
+    // Парсим даты явно в UTC для избежания проблем с часовыми поясами
+    const [startYear, startMonth, startDay] = startDate.split("-").map(Number);
+    const [endYear, endMonth, endDay] = endDate.split("-").map(Number);
+
+    const start = new Date(Date.UTC(startYear, startMonth - 1, startDay));
+    const end = new Date(Date.UTC(endYear, endMonth - 1, endDay));
     const current = new Date(start);
 
     while (current <= end) {
-      dates.push(current.toISOString().split("T")[0]);
-      current.setDate(current.getDate() + 1);
+      const year = current.getUTCFullYear();
+      const month = String(current.getUTCMonth() + 1).padStart(2, "0");
+      const day = String(current.getUTCDate()).padStart(2, "0");
+      dates.push(`${year}-${month}-${day}`);
+
+      // Используем UTC методы для избежания проблем с переходом на летнее время
+      current.setUTCDate(current.getUTCDate() + 1);
     }
 
     return dates;
