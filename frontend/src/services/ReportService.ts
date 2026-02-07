@@ -40,12 +40,23 @@ class ReportServiceClass {
   private filterHistoryByPeriod(
     history: PricePoint[],
     startDate: Date,
-    endDate: Date
+    endDate: Date,
+    interval?: "1h" | "1d" | "1w"
   ): PricePoint[] {
-    return history.filter((point) => {
-      const pointDate = new Date(point.timestamp);
-      return pointDate >= startDate && pointDate <= endDate;
-    });
+    const filtered = history
+      .filter((point) => {
+        const pointDate = new Date(point.timestamp);
+        return pointDate >= startDate && pointDate <= endDate;
+      })
+      .sort((a, b) => a.timestamp - b.timestamp);
+
+    if (interval === "1w" && filtered.length > 1) {
+      const step = Math.max(1, Math.floor(filtered.length / 8));
+      return filtered.filter(
+        (_, i) => i % step === 0 || i === filtered.length - 1
+      );
+    }
+    return filtered;
   }
 
   private optimizeHistoryForPDF(
@@ -82,11 +93,12 @@ class ReportServiceClass {
 
     const doc = new jsPDF();
 
-    // Фильтруем историю по выбранному периоду
+    // Фильтруем историю по выбранному периоду и интервалу
     const filteredHistory = this.filterHistoryByPeriod(
       report.data.history,
       report.params.startDate,
-      report.params.endDate
+      report.params.endDate,
+      report.params.interval
     );
 
     // Оптимизируем для PDF (не более 100 точек)
@@ -194,11 +206,12 @@ class ReportServiceClass {
   generateCSV(report: Report): void {
     if (!report.data) return;
 
-    // Фильтруем историю по выбранному периоду
+    // Фильтруем историю по выбранному периоду и интервалу
     const filteredHistory = this.filterHistoryByPeriod(
       report.data.history,
       report.params.startDate,
-      report.params.endDate
+      report.params.endDate,
+      report.params.interval
     );
 
     // Вычисляем статистику

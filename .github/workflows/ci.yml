@@ -47,6 +47,7 @@ jobs:
         working-directory: frontend
       - name: Upload Coverage Report
         uses: actions/upload-artifact@v4
+        if: success()
         with:
           name: coverage-report
           path: frontend/coverage/lcov.info
