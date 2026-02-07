@@ -14,10 +14,8 @@ RUN npm ci
 COPY frontend/ ./
 RUN rm -f node_modules/.bin/node && npm run build
 
-
 # -------- 2. Runtime stage --------
 FROM nginx:alpine
-
 
 # Копируем собранный фронт в nginx
 COPY --from=build /app/frontend/dist /usr/share/nginx/html

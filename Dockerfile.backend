@@ -22,4 +22,3 @@ EXPOSE 3500
 
 # Запуск сервера
 CMD ["node", "backend/server.js"]
-
