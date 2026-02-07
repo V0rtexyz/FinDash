@@ -1,4 +1,3 @@
-
 # Node modules
 node_modules/
 frontend/node_modules/
@@ -45,17 +44,3 @@ build/
 .DS_Store
 *.log
 .cache/
-=======
-node_modules
-frontend
-.git
-.github
-*.md
-.env
-.env.*
-coverage
-dist
-*.log
-.DS_Store
-tests
-playwright.config.ts
