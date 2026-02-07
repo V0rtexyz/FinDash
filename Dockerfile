@@ -1,4 +1,3 @@
-
 # -------- 1. Build stage --------
 FROM node:24-alpine AS build
 
@@ -26,20 +25,3 @@ EXPOSE 80
 
 # Запускаем nginx
 CMD ["nginx", "-g", "daemon off;"]
-=======
-# FinDash — образ backend (API + WebSocket).
-# Frontend собирается отдельно (Vite). Переменные окружения передаются при запуске.
-FROM node:22-alpine
-
-WORKDIR /app
-
-ENV NODE_ENV=production
-
-COPY package.json package-lock.json ./
-RUN npm ci --omit=dev
-
-COPY backend ./backend
-
-EXPOSE 3500
-
-CMD ["node", "backend/server.js"]
