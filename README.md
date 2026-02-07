@@ -17,6 +17,7 @@
 - [База данных](#база-данных)
 - [API](#api)
 - [Аналитика](#аналитика)
+- [Docker](#docker)
 - [Тестирование](#тестирование)
 - [CI/CD](#cicd)
 - [Участие в разработке](#участие-в-разработке)
@@ -95,8 +96,10 @@ FinDash/
 ├── bd.sql                   # Схема БД и индексы
 ├── data.sql                 # Примеры данных
 ├── indexes.sql              # Отдельный скрипт индексов
+├── Dockerfile               # Образ backend
 ├── SCHEMA.md                # Описание схемы БД (таблицы, связи, индексы)
 ├── DBREADME.md              # Работа с БД и скриптами
+├── YANDEX_METRIKA.md        # Документация по Яндекс.Метрике
 └── CONTRIBUTING.md          # Правила контрибьюта
 ```
 
@@ -247,17 +250,34 @@ WebSocket: подключение к `ws://localhost:3500` для real-time об
 
 ---
 
+## Docker
+
+Образ собирает только **backend** (API + WebSocket). Frontend деплоится отдельно (Vite build → статика).
+
+```bash
+docker build -t findash .
+docker run -p 3500:3500 \
+  -e DATABASE_URL=postgresql://... \
+  -e COINLAYER_API_KEY=... \
+  -e ALPHA_VANTAGE_API_KEY=... \
+  findash
+```
+
+В образе задано `NODE_ENV=production`. Переменные окружения передаются при запуске контейнера.
+
+---
+
 ## Тестирование
 
 Из каталога `frontend/`:
 
 ```bash
-npm run lint              # ESLint
-npm run prettier:check    # Prettier
-npm run stylelint:check   # Stylelint
-npm run test:unit         # Jest unit-тесты
+npm run lint               # ESLint
+npm run prettier:check      # Prettier
+npm run stylelint:check    # Stylelint
+npm run test:unit          # Jest unit-тесты
 npm run test:unit:coverage # С покрытием
-npm run test:e2e          # Playwright E2E
+npm run test:e2e           # Playwright E2E
 ```
 
 Перед PR рекомендуется выполнить все проверки из [CONTRIBUTING.md](./CONTRIBUTING.md).
@@ -291,7 +311,7 @@ GitHub Actions (`.github/workflows/ci.yml`):
 
 | Документ | Содержание |
 |----------|------------|
-| [README.md](./README.md) | Обзор проекта, стек, запуск, API, аналитика (этот файл) |
+| [README.md](./README.md) | Обзор проекта, стек, запуск, API, аналитика, Docker (этот файл) |
 | [YANDEX_METRIKA.md](./YANDEX_METRIKA.md) | **Яндекс.Метрика:** архитектура, что считается, как запустить, отчёты |
 | [SCHEMA.md](./SCHEMA.md) | Схема БД: таблицы, связи, индексы, типы активов |
 | [DBREADME.md](./DBREADME.md) | Скрипты БД, тестовые пользователи, быстрый старт |

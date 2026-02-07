@@ -34,8 +34,7 @@ export function YandexMetrika() {
 
     const sendHit = () => {
       if (typeof window.ym !== "function") return;
-      const url =
-        window.location.origin + location.pathname + location.search;
+      const url = window.location.origin + location.pathname + location.search;
       window.ym(id, "hit", url);
     };
 
@@ -55,6 +54,9 @@ export function YandexMetrika() {
     script.src = SCRIPT_URL;
     script.async = true;
     script.onload = init;
+    script.onerror = () => {
+      // tag.js не загрузился (сеть, блокировщик) — метрика не работает, приложение не падает
+    };
     document.head.appendChild(script);
 
     return () => {
