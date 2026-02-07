@@ -30,9 +30,7 @@ interface TimeSeriesResponse {
   symbol: string;
   startDate: string;
   endDate: string;
-  rates:
-    | Array<{ date: string; rate: number }>
-    | Record<string, number | null>;
+  rates: Array<{ date: string; rate: number }> | Record<string, number | null>;
   error?: string;
 }
 

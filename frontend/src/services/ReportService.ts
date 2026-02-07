@@ -52,7 +52,9 @@ class ReportServiceClass {
 
     if (interval === "1w" && filtered.length > 1) {
       const step = Math.max(1, Math.floor(filtered.length / 8));
-      return filtered.filter((_, i) => i % step === 0 || i === filtered.length - 1);
+      return filtered.filter(
+        (_, i) => i % step === 0 || i === filtered.length - 1
+      );
     }
     return filtered;
   }
