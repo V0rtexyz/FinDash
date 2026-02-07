@@ -1,6 +1,13 @@
-import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
-import { CurrencyData } from '../services/CurrencyAPI';
-import { WebSocketService } from '../services/WebSocketService';
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+  useCallback,
+} from "react";
+import { CurrencyData } from "../services/CurrencyAPI";
+import { WebSocketService } from "../services/WebSocketService";
 
 interface CurrencyContextType {
   currencies: Map<string, CurrencyData>;
@@ -12,15 +19,21 @@ interface CurrencyContextType {
   unsubscribeFromCurrency: (symbol: string) => void;
 }
 
-const CurrencyContext = createContext<CurrencyContextType | undefined>(undefined);
+const CurrencyContext = createContext<CurrencyContextType | undefined>(
+  undefined
+);
 
 export function CurrencyProvider({ children }: { children: ReactNode }) {
-  const [currencies, setCurrencies] = useState<Map<string, CurrencyData>>(new Map());
+  const [currencies, setCurrencies] = useState<Map<string, CurrencyData>>(
+    new Map()
+  );
   const [selectedCurrency, setSelectedCurrency] = useState<string | null>(null);
-  const [subscriptions, setSubscriptions] = useState<Map<string, () => void>>(new Map());
+  const [subscriptions, setSubscriptions] = useState<Map<string, () => void>>(
+    new Map()
+  );
 
   const addCurrency = useCallback((data: CurrencyData) => {
-    setCurrencies(prev => {
+    setCurrencies((prev) => {
       const next = new Map(prev);
       next.set(data.symbol, data);
       return next;
@@ -28,32 +41,35 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const removeCurrency = useCallback((symbol: string) => {
-    setCurrencies(prev => {
+    setCurrencies((prev) => {
       const next = new Map(prev);
       next.delete(symbol);
       return next;
     });
   }, []);
 
-  const subscribeToCurrency = useCallback((symbol: string) => {
-    setSubscriptions(prev => {
-      // Проверяем есть ли уже подписка
-      if (prev.has(symbol)) {
-        return prev;
-      }
+  const subscribeToCurrency = useCallback(
+    (symbol: string) => {
+      setSubscriptions((prev) => {
+        // Проверяем есть ли уже подписка
+        if (prev.has(symbol)) {
+          return prev;
+        }
 
-      const unsubscribe = WebSocketService.subscribe(symbol, (data) => {
-        addCurrency(data);
+        const unsubscribe = WebSocketService.subscribe(symbol, (data) => {
+          addCurrency(data);
+        });
+
+        const next = new Map(prev);
+        next.set(symbol, unsubscribe);
+        return next;
       });
-
-      const next = new Map(prev);
-      next.set(symbol, unsubscribe);
-      return next;
-    });
-  }, [addCurrency]);
+    },
+    [addCurrency]
+  );
 
   const unsubscribeFromCurrency = useCallback((symbol: string) => {
-    setSubscriptions(prev => {
+    setSubscriptions((prev) => {
       const unsubscribe = prev.get(symbol);
       if (unsubscribe) {
         unsubscribe();
@@ -71,7 +87,7 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     return () => {
-      subscriptions.forEach(unsubscribe => unsubscribe());
+      subscriptions.forEach((unsubscribe) => unsubscribe());
       WebSocketService.disconnect();
     };
   }, [subscriptions]);
@@ -86,14 +102,17 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
     unsubscribeFromCurrency,
   };
 
-  return <CurrencyContext.Provider value={value}>{children}</CurrencyContext.Provider>;
+  return (
+    <CurrencyContext.Provider value={value}>
+      {children}
+    </CurrencyContext.Provider>
+  );
 }
 
 export function useCurrency() {
   const context = useContext(CurrencyContext);
   if (context === undefined) {
-    throw new Error('useCurrency must be used within a CurrencyProvider');
+    throw new Error("useCurrency must be used within a CurrencyProvider");
   }
   return context;
 }
-
