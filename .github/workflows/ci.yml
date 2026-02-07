@@ -72,11 +72,39 @@ jobs:
         run: npm run test:e2e
         working-directory: frontend
   docker-build:
-    name: Build Docker Image
+    name: Build and Test Docker Images
     runs-on: ubuntu-latest
     needs: e2e-tests
-    if: github.ref == 'refs/heads/main'
     steps:
       - uses: actions/checkout@v4
-      - name: Build Docker image
-        run: docker build -t findash .
+      
+      - name: Create .env file for testing
+        run: |
+          cat > .env << EOF
+          POSTGRES_USER=postgres
+          POSTGRES_PASSWORD=test_password
+          POSTGRES_DB=findash_test
+          POSTGRES_PORT=5432
+          BACKEND_PORT=3500
+          FRONTEND_PORT=8080
+          NODE_ENV=production
+          COINLAYER_API_KEY=test_key
+          ALPHA_VANTAGE_API_KEY=test_key
+          EOF
+      
+      - name: Validate docker-compose configuration
+        run: docker compose config
+      
+      - name: Build Docker images
+        run: docker compose build
+      
+      - name: Check image sizes
+        run: |
+          echo "Docker image sizes:"
+          docker images | grep -E "fd.*frontend|fd.*backend|postgres" || echo "Images built successfully"
+      
+      - name: Test Frontend Dockerfile
+        run: docker build -t findash-frontend-test -f Dockerfile .
+      
+      - name: Test Backend Dockerfile
+        run: docker build -t findash-backend-test -f Dockerfile.backend .

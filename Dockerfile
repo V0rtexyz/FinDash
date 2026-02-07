@@ -1,16 +1,27 @@
-# FinDash — образ backend (API + WebSocket).
-# Frontend собирается отдельно (Vite). Переменные окружения передаются при запуске.
-FROM node:22-alpine
+# -------- 1. Build stage --------
+FROM node:24-alpine AS build
 
-WORKDIR /app
+WORKDIR /app/frontend
 
-ENV NODE_ENV=production
+# Инструменты, нужные для node-gyp (ТОЛЬКО на этапе сборки)
+RUN apk add --no-cache python3 make g++
 
-COPY package.json package-lock.json ./
-RUN npm ci --omit=dev
+# Устанавливаем зависимости
+COPY frontend/package*.json ./
+RUN npm ci
 
-COPY backend ./backend
+# Копируем код и собираем фронт
+COPY frontend/ ./
+RUN rm -f node_modules/.bin/node && npm run build
 
-EXPOSE 3500
+# -------- 2. Runtime stage --------
+FROM nginx:alpine
 
-CMD ["node", "backend/server.js"]
+# Копируем собранный фронт в nginx
+COPY --from=build /app/frontend/dist /usr/share/nginx/html
+
+# Открываем порт
+EXPOSE 80
+
+# Запускаем nginx
+CMD ["nginx", "-g", "daemon off;"]
