@@ -2,6 +2,7 @@ import { ReactNode } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { SentryTest } from "./SentryTest";
+import { MusicPlayer } from "./MusicPlayer";
 import "../styles/Layout.css";
 
 interface LayoutProps {
@@ -56,6 +57,7 @@ export function Layout({ children }: LayoutProps) {
 
       <main className="layout-content">{children}</main>
       <SentryTest />
+      <MusicPlayer />
     </div>
   );
 }
