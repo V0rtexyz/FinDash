@@ -1,0 +1,153 @@
+.charts-view {
+  background: rgb(255, 255, 255, 0.95);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 4px 12px rgb(0, 0, 0, 0.1);
+  backdrop-filter: blur(10px);
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden;
+}
+
+.chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.chart-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1a202c;
+  margin: 0;
+}
+
+.chart-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.current-price {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1a202c;
+}
+
+.price-change {
+  font-size: 16px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.price-change.positive {
+  color: #38a169;
+  background: rgb(72, 187, 120, 0.1);
+}
+
+.price-change.negative {
+  color: #c53030;
+  background: rgb(214, 48, 49, 0.1);
+}
+
+.chart-container {
+  height: 400px;
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+}
+
+.empty-state {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+
+.empty-icon {
+  font-size: 64px;
+  opacity: 0.5;
+}
+
+.empty-state h3 {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1a202c;
+  margin: 0;
+}
+
+.empty-state p {
+  font-size: 16px;
+  color: #718096;
+  margin: 0;
+  text-align: center;
+}
+
+@media (max-width: 768px) {
+  .charts-view {
+    padding: 20px;
+  }
+
+  .chart-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .chart-info {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .current-price {
+    font-size: 20px;
+  }
+
+  .price-change {
+    font-size: 14px;
+  }
+
+  .chart-container {
+    height: 300px;
+  }
+
+  .empty-icon {
+    font-size: 48px;
+  }
+
+  .empty-state h3 {
+    font-size: 20px;
+  }
+
+  .empty-state p {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .charts-view {
+    padding: 16px;
+  }
+
+  .chart-container {
+    height: 250px;
+  }
+
+  .current-price {
+    font-size: 18px;
+  }
+
+  .price-change {
+    font-size: 13px;
+    padding: 4px 8px;
+  }
+}

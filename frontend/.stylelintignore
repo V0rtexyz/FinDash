@@ -1,0 +1,16 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+build/
+
+# Test coverage
+coverage/
+test-results/
+
+# IDE
+.vscode/
+.idea/
+
+
