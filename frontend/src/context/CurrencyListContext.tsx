@@ -3,6 +3,7 @@ import {
   useContext,
   useState,
   useEffect,
+  useRef,
   ReactNode,
 } from "react";
 import { CurrencyAPI } from "../services/CurrencyAPI";
@@ -23,52 +24,64 @@ const CurrencyListContext = createContext<CurrencyListContextType | undefined>(
   undefined
 );
 
+let currenciesFetchPromise: Promise<CurrencyInfo[]> | null = null;
+
 export function CurrencyListProvider({ children }: { children: ReactNode }) {
   const [currencies, setCurrencies] = useState<CurrencyInfo[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const mountedRef = useRef(true);
 
   const loadCurrencies = async () => {
     try {
-      // Проверяем кэш в sessionStorage
       const cached = sessionStorage.getItem("available_currencies");
       const cacheTime = sessionStorage.getItem("available_currencies_time");
       const now = Date.now();
 
-      // Кэш валиден 1 час
       if (cached && cacheTime && now - parseInt(cacheTime) < 3600000) {
         setCurrencies(JSON.parse(cached));
         setIsLoading(false);
         return;
       }
 
-      // Загружаем с сервера
-      const data = await CurrencyAPI.fetchAvailableCurrencies();
-      setCurrencies(data);
+      if (!currenciesFetchPromise) {
+        currenciesFetchPromise = CurrencyAPI.fetchAvailableCurrencies();
+      }
+      const data = await currenciesFetchPromise;
+      currenciesFetchPromise = null;
 
-      // Сохраняем в кэш
-      sessionStorage.setItem("available_currencies", JSON.stringify(data));
-      sessionStorage.setItem("available_currencies_time", now.toString());
-      setIsLoading(false);
-      setError(null);
+      if (mountedRef.current) {
+        setCurrencies(data);
+        sessionStorage.setItem("available_currencies", JSON.stringify(data));
+        sessionStorage.setItem("available_currencies_time", now.toString());
+        setError(null);
+      }
     } catch (err) {
+      currenciesFetchPromise = null;
       console.error("Error loading currencies:", err);
-      setError("Не удалось загрузить список валют");
-      setIsLoading(false);
+      if (mountedRef.current) {
+        setError("Не удалось загрузить список валют");
+      }
+    } finally {
+      if (mountedRef.current) setIsLoading(false);
     }
   };
 
   const refreshCurrencies = async () => {
-    // Очищаем кэш и перезагружаем
     sessionStorage.removeItem("available_currencies");
     sessionStorage.removeItem("available_currencies_time");
+    currenciesFetchPromise = null;
     setIsLoading(true);
     await loadCurrencies();
   };
 
   useEffect(() => {
+    mountedRef.current = true;
     loadCurrencies();
-  }, []); // Загружаем только один раз при монтировании
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
 
   const value = {
     currencies,

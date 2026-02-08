@@ -1,13 +1,46 @@
-node_modules
-frontend
-.git
-.github
-*.md
+# Node modules
+node_modules/
+frontend/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment files
 .env
-.env.*
-coverage
-dist
-*.log
+.env.local
+.env.*.local
+
+# Git
+.git/
+.gitignore
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Testing
+frontend/coverage/
+frontend/test-results/
+frontend/playwright-report/
+*.test.ts
+*.spec.ts
+tests/
+
+# Build outputs (frontend built inside Docker)
+frontend/dist/
+build/
+
+# CI/CD
+.github/
+
+# Documentation
+*.md
+!README.md
+
+# Misc
 .DS_Store
-tests
-playwright.config.ts
+*.log
+.cache/

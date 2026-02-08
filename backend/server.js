@@ -47,6 +47,14 @@ const alertService = new AlertService(database, coinLayerService);
 // Connected WebSocket clients storage: Map<WebSocket, {userId: number, login: string}>
 const connectedClients = new Map();
 
+// Rate subscriptions: Map<WebSocket, Set<symbol>>
+const clientRateSubscriptions = new Map();
+
+// Last known prices for change24h: Map<symbol, { price, timestamp }>
+const lastPricesBySymbol = new Map();
+
+const RATE_BROADCAST_INTERVAL_MS = 30000; // 30s - fewer CoinLayer requests
+
 // Create Express app
 const app = express();
 
@@ -362,24 +370,50 @@ wss.on("connection", (ws) => {
         }
 
         case "subscribe:rates": {
-          // Subscribe to real-time currency rate updates
-          const clientData = connectedClients.get(ws);
-          if (!clientData) {
+          const symbols = Array.isArray(message.symbols)
+            ? message.symbols.filter((s) => typeof s === "string")
+            : [];
+          if (symbols.length === 0) {
             ws.send(
               JSON.stringify({
-                type: "error",
-                message: "You must be logged in to subscribe to rates",
+                type: "subscribe:rates:response",
+                success: false,
+                message: "symbols array is required",
               })
             );
             break;
           }
-
-          // In production, this would set up a subscription to push rate updates
+          if (!clientRateSubscriptions.has(ws)) {
+            clientRateSubscriptions.set(ws, new Set());
+          }
+          symbols.forEach((s) => clientRateSubscriptions.get(ws).add(s));
           ws.send(
             JSON.stringify({
               type: "subscribe:rates:response",
               success: true,
               message: "Subscribed to rate updates",
+              symbols,
+            })
+          );
+          break;
+        }
+
+        case "unsubscribe:rates": {
+          const symbols = Array.isArray(message.symbols)
+            ? message.symbols
+            : [];
+          if (clientRateSubscriptions.has(ws)) {
+            const set = clientRateSubscriptions.get(ws);
+            symbols.forEach((s) => set.delete(s));
+            if (set.size === 0) {
+              clientRateSubscriptions.delete(ws);
+            }
+          }
+          ws.send(
+            JSON.stringify({
+              type: "unsubscribe:rates:response",
+              success: true,
+              symbols,
             })
           );
           break;
@@ -439,6 +473,7 @@ wss.on("connection", (ws) => {
     } else {
       console.log("Anonymous client disconnected");
     }
+    clientRateSubscriptions.delete(ws);
   });
 
   // Handle errors
@@ -458,19 +493,63 @@ function broadcastToAll(message, excludeWs = null) {
   });
 }
 
-// Send message to a specific user by userId (for alert_triggered)
-function sendToUser(userId, message) {
-  wss.clients.forEach((client) => {
-    const data = connectedClients.get(client);
-    if (data && data.userId === userId && client.readyState === WebSocket.OPEN) {
-      client.send(JSON.stringify(message));
-    }
+// Periodic rate broadcast for subscribed clients
+async function broadcastRateUpdates() {
+  const allSymbols = new Set();
+  clientRateSubscriptions.forEach((symbols) => {
+    symbols.forEach((s) => allSymbols.add(s));
+  });
+  if (allSymbols.size === 0) return;
+
+  const symbolsArr = Array.from(allSymbols);
+  const result = await coinLayerService.getLiveRates(symbolsArr);
+  if (!result.success || !result.rates) return;
+
+  const names = {
+    BTC: "Bitcoin",
+    ETH: "Ethereum",
+    USDT: "Tether",
+    BNB: "Binance Coin",
+    XRP: "Ripple",
+    SOL: "Solana",
+    ADA: "Cardano",
+  };
+
+  const timestamp = (result.timestamp || Math.floor(Date.now() / 1000)) * 1000;
+
+  clientRateSubscriptions.forEach((symbols, clientWs) => {
+    if (clientWs.readyState !== WebSocket.OPEN) return;
+
+    symbols.forEach((symbol) => {
+      const price = result.rates[symbol];
+      if (price == null || Number.isNaN(Number(price))) return;
+
+      const numPrice = Number(price);
+      const prev = lastPricesBySymbol.get(symbol);
+      let change24h = 0;
+      if (prev && prev.price > 0) {
+        change24h = ((numPrice - prev.price) / prev.price) * 100;
+      }
+      lastPricesBySymbol.set(symbol, { price: numPrice, timestamp });
+
+      clientWs.send(
+        JSON.stringify({
+          type: "rate:update",
+          symbol,
+          name: names[symbol] || symbol,
+          price: numPrice,
+          change24h,
+          timestamp,
+        })
+      );
+    });
   });
 }
 
-alertService.onAlertTriggered = (userId, payload) => {
-  sendToUser(userId, payload);
-};
+// Start rate broadcast interval
+setInterval(broadcastRateUpdates, RATE_BROADCAST_INTERVAL_MS);
+// Run first broadcast shortly after start so early subscribers get data quickly
+setTimeout(broadcastRateUpdates, 2000);
 
 // Start server only after we check DB connectivity
 async function start() {

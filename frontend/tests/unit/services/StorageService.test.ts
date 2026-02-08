@@ -62,7 +62,7 @@ describe("StorageService", () => {
     expect(favorites[0].currency.symbol).toBe("ETH");
   });
 
-  test("should not add duplicate to favorites", async () => {
+  test("should not add duplicate currency to favorites", async () => {
     const currency = createMockCurrency("ETH", "Ethereum");
     await StorageService.addToFavorites(currency);
     await StorageService.addToFavorites(currency);
@@ -70,51 +70,52 @@ describe("StorageService", () => {
     expect(favorites.length).toBe(1);
   });
 
-  test("should remove from favorites", async () => {
-    const currency = createMockCurrency("XRP", "Ripple");
+  test("should remove currency from favorites", async () => {
+    const currency = createMockCurrency("ETH", "Ethereum");
     await StorageService.addToFavorites(currency);
     const favorites = await StorageService.getFavorites();
     await StorageService.removeFromFavorites(favorites[0].id);
-    const updated = await StorageService.getFavorites();
-    expect(updated.length).toBe(0);
+    const updatedFavorites = await StorageService.getFavorites();
+    expect(updatedFavorites.length).toBe(0);
   });
 
-  test("should clear storage", async () => {
-    const currency = createMockCurrency("BTC", "Bitcoin");
-    await StorageService.addToStorage(currency);
+  test("should clear all storage", async () => {
+    const currency1 = createMockCurrency("BTC", "Bitcoin");
+    const currency2 = createMockCurrency("ETH", "Ethereum");
+    await StorageService.addToStorage(currency1);
+    await StorageService.addToStorage(currency2);
     await StorageService.clearStorage();
     const storage = await StorageService.getStorage();
-    expect(storage).toEqual([]);
+    expect(storage.length).toBe(0);
   });
 
-  test("should clear favorites", async () => {
-    const currency = createMockCurrency("SOL", "Solana");
-    await StorageService.addToFavorites(currency);
+  test("should clear all favorites", async () => {
+    const currency1 = createMockCurrency("BTC", "Bitcoin");
+    const currency2 = createMockCurrency("ETH", "Ethereum");
+    await StorageService.addToFavorites(currency1);
+    await StorageService.addToFavorites(currency2);
     await StorageService.clearFavorites();
     const favorites = await StorageService.getFavorites();
-    expect(favorites).toEqual([]);
+    expect(favorites.length).toBe(0);
   });
 
-  test("isFavorite should return true when currency in favorites", async () => {
-    const currency = createMockCurrency("ADA", "Cardano");
+  test("should check if currency is favorite", async () => {
+    const currency = createMockCurrency("BTC", "Bitcoin");
     await StorageService.addToFavorites(currency);
-    const result = await StorageService.isFavorite("ADA");
-    expect(result).toBe(true);
+    const isFav = await StorageService.isFavorite("BTC");
+    expect(isFav).toBe(true);
+    const isNotFav = await StorageService.isFavorite("ETH");
+    expect(isNotFav).toBe(false);
   });
 
-  test("isFavorite should return false when currency not in favorites", async () => {
-    const result = await StorageService.isFavorite("BTC");
-    expect(result).toBe(false);
-  });
-
-  test("getStorage should return empty array on invalid JSON", async () => {
-    localStorage.setItem("currency_history", "invalid json{{{");
+  test("should handle corrupted storage data", async () => {
+    localStorage.setItem("currency_history", "invalid json");
     const storage = await StorageService.getStorage();
     expect(storage).toEqual([]);
   });
 
-  test("getFavorites should return empty array on invalid JSON", async () => {
-    localStorage.setItem("currency_favorites", "not valid");
+  test("should handle corrupted favorites data", async () => {
+    localStorage.setItem("currency_favorites", "invalid json");
     const favorites = await StorageService.getFavorites();
     expect(favorites).toEqual([]);
   });

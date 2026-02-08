@@ -103,6 +103,66 @@ router.get("/historical/:date", async (req, res) => {
 const MAX_TIMESERIES_DAYS = 365;
 
 /**
+ * GET /api/currencies/full/:symbol
+ * Get live rate + timeseries in one request (reduces API calls)
+ * Query params: startDate, endDate (YYYY-MM-DD format)
+ */
+router.get("/full/:symbol", async (req, res) => {
+  try {
+    const { symbol } = req.params;
+    const { startDate, endDate } = req.query;
+
+    if (!startDate || !endDate) {
+      return res.status(400).json({
+        success: false,
+        message: "startDate and endDate query parameters are required",
+      });
+    }
+
+    if (
+      !/^\d{4}-\d{2}-\d{2}$/.test(startDate) ||
+      !/^\d{4}-\d{2}-\d{2}$/.test(endDate)
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid date format. Use YYYY-MM-DD",
+      });
+    }
+
+    const coinLayerService = req.app.get("coinLayerService");
+    const liveResult = await coinLayerService.getLiveRates([symbol]);
+    const liveRate = liveResult.rates?.[symbol] ?? null;
+    const tsResult = await coinLayerService.getTimeSeries(symbol, startDate, endDate, {
+      preFetchedLiveRate: liveRate,
+    });
+
+    const price = liveResult.rates?.[symbol];
+    if (price == null) {
+      return res.status(404).json({
+        success: false,
+        message: `Currency ${symbol} not found`,
+      });
+    }
+
+    res.json({
+      success: true,
+      symbol,
+      price,
+      timestamp: liveResult.timestamp,
+      startDate: tsResult.startDate,
+      endDate: tsResult.endDate,
+      rates: tsResult.rates,
+    });
+  } catch (error) {
+    console.error("Get full currency data error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+});
+
+/**
  * GET /api/currencies/timeseries/:symbol
  * Get time series data for a currency
  * Query params: startDate, endDate (YYYY-MM-DD format). Max range 365 days.

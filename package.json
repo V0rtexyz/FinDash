@@ -6,7 +6,10 @@
   "main": "backend/server.js",
   "scripts": {
     "start": "node backend/server.js",
-    "dev": "node --watch backend/server.js"
+    "dev": "node --watch backend/server.js",
+    "test:backend": "cross-env NODE_OPTIONS=--experimental-vm-modules jest backend/tests",
+    "test:backend:coverage": "cross-env NODE_OPTIONS=--experimental-vm-modules jest backend/tests --coverage",
+    "test:backend:watch": "cross-env NODE_OPTIONS=--experimental-vm-modules jest backend/tests --watch"
   },
   "dependencies": {
     "cors": "^2.8.6",
@@ -14,5 +17,10 @@
     "express": "^4.22.1",
     "pg": "^8.18.0",
     "ws": "^8.19.0"
+  },
+  "devDependencies": {
+    "@jest/globals": "^29.7.0",
+    "cross-env": "^7.0.3",
+    "jest": "^29.7.0"
   }
 }
