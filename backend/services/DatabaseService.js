@@ -47,6 +47,8 @@ export default class DatabaseService {
       this.users = [];
       this.userFavorites = [];
       this.userReports = [];
+      this.userAlerts = [];
+      this.userNotifications = [];
       
       // Add default test users for mock mode
       // Password: "admin" hashed with SHA256
@@ -358,6 +360,224 @@ export default class DatabaseService {
       }));
     } catch (error) {
       console.error("DatabaseService.getUserReports error:", error);
+      throw error;
+    }
+  }
+
+  // Alerts operations
+  async getUserAlerts(userId) {
+    if (!this.usePostgres) {
+      return (this.userAlerts || []).filter((a) => a.userId === userId);
+    }
+    try {
+      const result = await this.pool.query(
+        'SELECT id, "userId", type, symbol, "alertCondition" AS "alertCondition", "targetValue" AS "targetValue", "isActive", "createdAt" FROM user_alerts WHERE "userId" = $1 ORDER BY "createdAt" DESC',
+        [userId]
+      );
+      return result.rows.map((r) => ({
+        id: r.id,
+        userId: r.userId,
+        type: r.type,
+        symbol: r.symbol,
+        condition: r.alertCondition,
+        targetValue: parseFloat(r.targetValue),
+        isActive: r.isActive,
+        createdAt: r.createdAt,
+      }));
+    } catch (error) {
+      console.error("DatabaseService.getUserAlerts error:", error);
+      throw error;
+    }
+  }
+
+  async getActiveAlertSymbols() {
+    if (!this.usePostgres) {
+      const alerts = (this.userAlerts || []).filter((a) => a.isActive);
+      return [...new Set(alerts.map((a) => a.symbol))];
+    }
+    try {
+      const result = await this.pool.query(
+        'SELECT DISTINCT symbol FROM user_alerts WHERE "isActive" = true'
+      );
+      return result.rows.map((r) => r.symbol);
+    } catch (error) {
+      console.error("DatabaseService.getActiveAlertSymbols error:", error);
+      throw error;
+    }
+  }
+
+  async getActiveAlertsBySymbols(symbols) {
+    if (!symbols || symbols.length === 0) return [];
+    if (!this.usePostgres) {
+      return (this.userAlerts || []).filter(
+        (a) => a.isActive && symbols.includes(a.symbol)
+      );
+    }
+    try {
+      const placeholders = symbols.map((_, i) => `$${i + 1}`).join(",");
+      const result = await this.pool.query(
+        `SELECT id, "userId", type, symbol, "alertCondition" AS "alertCondition", "targetValue" AS "targetValue" FROM user_alerts WHERE "isActive" = true AND symbol IN (${placeholders})`,
+        symbols
+      );
+      return result.rows.map((r) => ({
+        id: r.id,
+        userId: r.userId,
+        type: r.type,
+        symbol: r.symbol,
+        condition: r.alertCondition,
+        targetValue: parseFloat(r.targetValue),
+      }));
+    } catch (error) {
+      console.error("DatabaseService.getActiveAlertsBySymbols error:", error);
+      throw error;
+    }
+  }
+
+  async createAlert(userId, { type, symbol, condition, targetValue }) {
+    if (!this.usePostgres) {
+      const newAlert = {
+        id: Math.max(...(this.userAlerts || []).map((a) => a.id), 0) + 1,
+        userId,
+        type: type || "currency",
+        symbol,
+        condition,
+        targetValue: parseFloat(targetValue),
+        isActive: true,
+        createdAt: new Date().toISOString(),
+      };
+      this.userAlerts.push(newAlert);
+      return newAlert;
+    }
+    try {
+      const result = await this.pool.query(
+        'INSERT INTO user_alerts ("userId", type, symbol, "alertCondition", "targetValue", "isActive") VALUES ($1, $2, $3, $4, $5, true) RETURNING id, "userId", type, symbol, "alertCondition" AS condition, "targetValue" AS "targetValue", "isActive", "createdAt"',
+        [userId, type || "currency", symbol, condition, targetValue]
+      );
+      const r = result.rows[0];
+      return {
+        id: r.id,
+        userId: r.userId,
+        type: r.type,
+        symbol: r.symbol,
+        condition: r.condition,
+        targetValue: parseFloat(r.targetValue),
+        isActive: r.isActive,
+        createdAt: r.createdAt,
+      };
+    } catch (error) {
+      console.error("DatabaseService.createAlert error:", error);
+      throw error;
+    }
+  }
+
+  async deleteAlert(userId, alertId) {
+    if (!this.usePostgres) {
+      const idx = (this.userAlerts || []).findIndex(
+        (a) => a.id === parseInt(alertId, 10) && a.userId === userId
+      );
+      if (idx !== -1) {
+        this.userAlerts.splice(idx, 1);
+        return true;
+      }
+      return false;
+    }
+    try {
+      const result = await this.pool.query(
+        'DELETE FROM user_alerts WHERE id = $1 AND "userId" = $2',
+        [alertId, userId]
+      );
+      return result.rowCount > 0;
+    } catch (error) {
+      console.error("DatabaseService.deleteAlert error:", error);
+      throw error;
+    }
+  }
+
+  async setAlertInactive(alertId) {
+    if (!this.usePostgres) {
+      const a = (this.userAlerts || []).find((x) => x.id === parseInt(alertId, 10));
+      if (a) {
+        a.isActive = false;
+        return true;
+      }
+      return false;
+    }
+    try {
+      const result = await this.pool.query(
+        'UPDATE user_alerts SET "isActive" = false WHERE id = $1',
+        [alertId]
+      );
+      return result.rowCount > 0;
+    } catch (error) {
+      console.error("DatabaseService.setAlertInactive error:", error);
+      throw error;
+    }
+  }
+
+  async createNotification(userId, alertId, message) {
+    if (!this.usePostgres) {
+      const newNotif = {
+        id:
+          Math.max(...(this.userNotifications || []).map((n) => n.id), 0) + 1,
+        userId,
+        alertId,
+        message,
+        readAt: null,
+        createdAt: new Date().toISOString(),
+      };
+      this.userNotifications.push(newNotif);
+      return newNotif;
+    }
+    try {
+      const result = await this.pool.query(
+        'INSERT INTO user_notifications ("userId", "alertId", message) VALUES ($1, $2, $3) RETURNING id, "userId", "alertId", message, "readAt", "createdAt"',
+        [userId, alertId, message]
+      );
+      return result.rows[0];
+    } catch (error) {
+      console.error("DatabaseService.createNotification error:", error);
+      throw error;
+    }
+  }
+
+  async getUserNotifications(userId, unreadOnly = false) {
+    if (!this.usePostgres) {
+      let list = (this.userNotifications || []).filter((n) => n.userId === userId);
+      if (unreadOnly) list = list.filter((n) => !n.readAt);
+      return list.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    }
+    try {
+      let query =
+        'SELECT id, "userId", "alertId", message, "readAt", "createdAt" FROM user_notifications WHERE "userId" = $1';
+      if (unreadOnly) query += ' AND "readAt" IS NULL';
+      query += ' ORDER BY "createdAt" DESC';
+      const result = await this.pool.query(query, [userId]);
+      return result.rows;
+    } catch (error) {
+      console.error("DatabaseService.getUserNotifications error:", error);
+      throw error;
+    }
+  }
+
+  async markNotificationRead(userId, notificationId) {
+    if (!this.usePostgres) {
+      const n = (this.userNotifications || []).find(
+        (x) => x.id === parseInt(notificationId, 10) && x.userId === userId
+      );
+      if (n) {
+        n.readAt = new Date().toISOString();
+        return true;
+      }
+      return false;
+    }
+    try {
+      const result = await this.pool.query(
+        'UPDATE user_notifications SET "readAt" = NOW() WHERE id = $1 AND "userId" = $2',
+        [notificationId, userId]
+      );
+      return result.rowCount > 0;
+    } catch (error) {
+      console.error("DatabaseService.markNotificationRead error:", error);
       throw error;
     }
   }

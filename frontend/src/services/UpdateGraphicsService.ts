@@ -8,7 +8,22 @@ export interface ChartData {
     borderColor: string;
     backgroundColor: string;
     tension: number;
-    fill: boolean;
+    fill?: boolean;
+  }[];
+}
+
+export interface CandlestickPoint {
+  x: number;
+  o: number;
+  h: number;
+  l: number;
+  c: number;
+}
+
+export interface CandlestickChartData {
+  datasets: {
+    label: string;
+    data: CandlestickPoint[];
   }[];
 }
 
@@ -153,6 +168,59 @@ class UpdateGraphicsServiceClass {
     return {
       labels,
       datasets,
+    };
+  }
+
+  formatCandlestickData(
+    currencyData: CurrencyData | undefined
+  ): CandlestickChartData {
+    if (!currencyData || !currencyData.history.length) {
+      return { datasets: [] };
+    }
+
+    const dailyMap = new Map<
+      string,
+      { o: number; h: number; l: number; c: number; x: number }
+    >();
+
+    currencyData.history.forEach((point) => {
+      const date = new Date(point.timestamp);
+      const dateKey = date.toISOString().split("T")[0];
+      const existing = dailyMap.get(dateKey);
+
+      if (!existing) {
+        dailyMap.set(dateKey, {
+          o: point.price,
+          h: point.price,
+          l: point.price,
+          c: point.price,
+          x: date.getTime(),
+        });
+      } else {
+        existing.h = Math.max(existing.h, point.price);
+        existing.l = Math.min(existing.l, point.price);
+        existing.c = point.price;
+      }
+    });
+
+    const sorted = Array.from(dailyMap.entries()).sort((a, b) =>
+      a[0].localeCompare(b[0])
+    );
+    const data: CandlestickPoint[] = sorted.map(([, v]) => ({
+      x: v.x,
+      o: v.o,
+      h: v.h,
+      l: v.l,
+      c: v.c,
+    }));
+
+    return {
+      datasets: [
+        {
+          label: `${currencyData.name} (${currencyData.symbol})`,
+          data,
+        },
+      ],
     };
   }
 }

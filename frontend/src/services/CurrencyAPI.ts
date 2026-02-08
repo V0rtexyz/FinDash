@@ -266,4 +266,36 @@ class CurrencyAPIService {
   }
 }
 
+export type ChartPeriod = "1D" | "1W" | "1M" | "1Y" | "ALL";
+
+export function getDateRangeForPeriod(period: ChartPeriod): {
+  startDate: Date;
+  endDate: Date;
+} {
+  const endDate = new Date();
+  const startDate = new Date(endDate);
+
+  switch (period) {
+    case "1D":
+      startDate.setDate(startDate.getDate() - 1);
+      break;
+    case "1W":
+      startDate.setDate(startDate.getDate() - 7);
+      break;
+    case "1M":
+      startDate.setMonth(startDate.getMonth() - 1);
+      break;
+    case "1Y":
+      startDate.setFullYear(startDate.getFullYear() - 1);
+      break;
+    case "ALL":
+      startDate.setFullYear(startDate.getFullYear() - 1);
+      break;
+    default:
+      startDate.setMonth(startDate.getMonth() - 1);
+  }
+
+  return { startDate, endDate };
+}
+
 export const CurrencyAPI = new CurrencyAPIService();

@@ -58,6 +58,51 @@
   background: rgb(214, 48, 49, 0.1);
 }
 
+.chart-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding: 12px 0;
+  border-bottom: 1px solid rgb(0, 0, 0, 0.08);
+}
+
+.chart-toolbar-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.chart-toolbar-label {
+  font-size: 13px;
+  color: #718096;
+  margin-right: 4px;
+}
+
+.chart-toolbar-btn {
+  padding: 6px 12px;
+  font-size: 13px;
+  border: 1px solid rgb(0, 0, 0, 0.12);
+  border-radius: 8px;
+  background: #fff;
+  color: #1a202c;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.chart-toolbar-btn:hover {
+  background: rgb(102, 126, 234, 0.08);
+  border-color: rgb(102, 126, 234, 0.3);
+}
+
+.chart-toolbar-btn.active {
+  background: rgb(102, 126, 234, 0.2);
+  border-color: rgb(102, 126, 234, 0.6);
+  color: #1a202c;
+}
+
 .chart-container {
   height: 400px;
   position: relative;

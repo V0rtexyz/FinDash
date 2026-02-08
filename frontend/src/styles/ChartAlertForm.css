@@ -1,0 +1,85 @@
+.chart-alert-form-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgb(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.chart-alert-form-modal {
+  background: #fff;
+  border-radius: 16px;
+  padding: 24px;
+  min-width: 320px;
+  max-width: 90vw;
+  box-shadow: 0 8px 32px rgb(0, 0, 0, 0.15);
+}
+
+.chart-alert-form-title {
+  margin: 0 0 20px 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #1a202c;
+}
+
+.chart-alert-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.chart-alert-form-label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 14px;
+  color: #4a5568;
+}
+
+.chart-alert-form-input,
+.chart-alert-form-select {
+  padding: 10px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.chart-alert-form-error {
+  color: #c53030;
+  font-size: 13px;
+  margin: 0;
+}
+
+.chart-alert-form-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+.chart-alert-form-btn {
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+
+.chart-alert-form-btn.secondary {
+  background: #f7fafc;
+  color: #4a5568;
+  border-color: #e2e8f0;
+}
+
+.chart-alert-form-btn.primary {
+  background: rgb(102, 126, 234, 1);
+  color: #fff;
+}
+
+.chart-alert-form-btn.primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

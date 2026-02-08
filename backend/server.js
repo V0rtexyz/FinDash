@@ -20,6 +20,9 @@ import currencyRoutes from "./routes/currencyRoutes.js";
 import stockRoutes from "./routes/stockRoutes.js";
 import favoritesRoutes from "./routes/favoritesRoutes.js";
 import reportRoutes from "./routes/reportRoutes.js";
+import alertsRoutes from "./routes/alertsRoutes.js";
+import notificationsRoutes from "./routes/notificationsRoutes.js";
+import AlertService from "./services/AlertService.js";
 
 // Load environment variables
 // Look for .env in backend/ first, then project root
@@ -39,6 +42,7 @@ const alphaVantageService = new AlphaVantageService(
   process.env.ALPHA_VANTAGE_API_KEY
 );
 const reportService = new ReportService(database);
+const alertService = new AlertService(database, coinLayerService);
 
 // Connected WebSocket clients storage: Map<WebSocket, {userId: number, login: string}>
 const connectedClients = new Map();
@@ -71,6 +75,7 @@ app.set("authService", authService);
 app.set("coinLayerService", coinLayerService);
 app.set("alphaVantageService", alphaVantageService);
 app.set("reportService", reportService);
+app.set("alertService", alertService);
 
 // Health check endpoint
 app.get("/", (req, res) => {
@@ -110,6 +115,8 @@ app.use("/api/currencies", currencyRoutes);
 app.use("/api/stocks", stockRoutes);
 app.use("/api/favorites", favoritesRoutes);
 app.use("/api/reports", reportRoutes);
+app.use("/api/alerts", alertsRoutes);
+app.use("/api/notifications", notificationsRoutes);
 
 // API info endpoint
 app.get("/api", (req, res) => {
@@ -145,6 +152,15 @@ app.get("/api", (req, res) => {
         currencyComparison: "POST /api/reports/currency-comparison",
         portfolio: "POST /api/reports/portfolio",
         download: "GET /api/reports/:reportId/download?userId=1&format=csv",
+      },
+      alerts: {
+        list: "GET /api/alerts?userId=1",
+        create: "POST /api/alerts",
+        delete: "DELETE /api/alerts/:id?userId=1",
+      },
+      notifications: {
+        list: "GET /api/notifications?userId=1",
+        markRead: "PATCH /api/notifications/:id/read?userId=1",
       },
     },
   });
@@ -470,9 +486,7 @@ wss.on("connection", (ws) => {
 // Helper function to broadcast message to all connected clients
 function broadcastToAll(message, excludeWs = null) {
   wss.clients.forEach((client) => {
-    // Skip the excluded client (usually the sender for some messages)
     if (excludeWs && client === excludeWs) return;
-
     if (client.readyState === WebSocket.OPEN) {
       client.send(JSON.stringify(message));
     }
@@ -548,6 +562,14 @@ async function start() {
       err && err.message ? err.message : err
     );
   }
+
+  // Run alert checks every 90 seconds
+  const ALERT_CHECK_INTERVAL_MS = 90 * 1000;
+  setInterval(() => {
+    alertService.checkAlerts().catch((err) =>
+      console.error("Alert check interval error:", err)
+    );
+  }, ALERT_CHECK_INTERVAL_MS);
 
   httpServer.listen(PORT, () => {
     console.log(`FinDash Server running on http://localhost:${PORT}`);
