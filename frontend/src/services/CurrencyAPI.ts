@@ -98,7 +98,8 @@ class CurrencyAPIService {
       }
 
       const currentPrice = data.price;
-      const timestamp = (data.timestamp || Math.floor(Date.now() / 1000)) * 1000;
+      const timestamp =
+        (data.timestamp || Math.floor(Date.now() / 1000)) * 1000;
       let history: PricePoint[] = [];
       let change24h = 0;
 
@@ -106,8 +107,7 @@ class CurrencyAPIService {
         history = ratesToHistory(data.rates);
         if (history.length >= 2) {
           const yesterdayPrice = history[history.length - 2].price;
-          change24h =
-            ((currentPrice - yesterdayPrice) / yesterdayPrice) * 100;
+          change24h = ((currentPrice - yesterdayPrice) / yesterdayPrice) * 100;
         }
       }
 
@@ -161,7 +161,8 @@ class CurrencyAPIService {
       }
 
       const currentPrice = data.price;
-      const timestamp = (data.timestamp || Math.floor(Date.now() / 1000)) * 1000;
+      const timestamp =
+        (data.timestamp || Math.floor(Date.now() / 1000)) * 1000;
       let history: PricePoint[] = [];
       let change24h = 0;
 

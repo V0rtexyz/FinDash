@@ -14,10 +14,7 @@ interface CurrencyContextType {
   selectedCurrency: string | null;
   selectCurrency: (symbol: string) => void;
   addCurrency: (data: CurrencyData) => void;
-  mergeCurrencyUpdate: (
-    symbol: string,
-    partial: Partial<CurrencyData>
-  ) => void;
+  mergeCurrencyUpdate: (symbol: string, partial: Partial<CurrencyData>) => void;
   removeCurrency: (symbol: string) => void;
   subscribeToCurrency: (symbol: string) => void;
   unsubscribeFromCurrency: (symbol: string) => void;

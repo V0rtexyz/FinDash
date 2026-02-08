@@ -59,7 +59,10 @@ class WebSocketServiceClass {
       this.ws.onclose = () => {
         this.connecting = false;
         this.ws = null;
-        if (this.subscribedSymbols.size > 0 && this.reconnectAttempts < this.maxReconnectAttempts) {
+        if (
+          this.subscribedSymbols.size > 0 &&
+          this.reconnectAttempts < this.maxReconnectAttempts
+        ) {
           this.reconnectTimeout = setTimeout(() => {
             this.reconnectAttempts++;
             this.connect();
