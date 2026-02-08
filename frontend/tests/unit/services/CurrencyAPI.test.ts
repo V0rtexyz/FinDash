@@ -6,7 +6,7 @@ global.fetch = mockFetch;
 
 describe("CurrencyAPI", () => {
   beforeEach(() => {
-    mockFetch.mockClear();
+    mockFetch.mockReset();
   });
 
   test("should fetch available currencies", async () => {
