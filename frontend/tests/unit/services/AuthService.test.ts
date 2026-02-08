@@ -87,88 +87,150 @@ describe("AuthService", () => {
     expect(localStorage.getItem("user")).toBeNull();
   });
 
-  test("should throw 401 with custom message", async () => {
-    mockFetch.mockResolvedValue({
-      ok: false,
-      status: 401,
-      json: async () => ({ message: "Invalid credentials" }),
-    });
-
-    await expect(
-      AuthService.login({ login: "user", password: "wrong" })
-    ).rejects.toThrow("Invalid credentials");
-  });
-
-  test("should throw 500 server error", async () => {
+  test("should handle login with server error (500)", async () => {
     mockFetch.mockResolvedValue({
       ok: false,
       status: 500,
-      json: async () => ({}),
-    });
-
-    await expect(
-      AuthService.login({ login: "user", password: "pass" })
-    ).rejects.toThrow(/Ошибка сервера/);
-  });
-
-  test("should throw when login success but no userId/userName", async () => {
-    mockFetch.mockResolvedValue({
-      ok: true,
       json: async () => ({
-        success: true,
-        message: "OK",
-        userId: undefined,
-        userName: undefined,
+        message: "Internal server error",
       }),
     });
 
     await expect(
-      AuthService.login({ login: "user", password: "pass" })
-    ).rejects.toThrow();
+      AuthService.login({ login: "test@test.com", password: "test123" })
+    ).rejects.toThrow("Ошибка сервера. Попробуйте позже");
   });
 
-  test("should register successfully", async () => {
+  test("should handle login when response success is false", async () => {
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        success: false,
+        message: "Login failed",
+      }),
+    });
+
+    await expect(
+      AuthService.login({ login: "test@test.com", password: "test123" })
+    ).rejects.toThrow("Login failed");
+  });
+
+  test("should successfully register new user", async () => {
     mockFetch.mockResolvedValue({
       ok: true,
       json: async () => ({
         success: true,
-        message: "Registered",
-        userId: 2,
+        message: "User registered successfully",
+        userId: 1,
+        userName: "newuser@test.com",
       }),
     });
 
     const result = await AuthService.register({
-      login: "newuser",
-      password: "pass123",
+      login: "newuser@test.com",
+      password: "newpass123",
     });
     expect(result.success).toBe(true);
-    expect(mockFetch).toHaveBeenCalledWith(
-      expect.stringContaining("/api/auth/register"),
-      expect.any(Object)
-    );
+    expect(result.message).toBe("User registered successfully");
   });
 
-  test("should throw 400 on register failure", async () => {
+  test("should handle registration error (400)", async () => {
     mockFetch.mockResolvedValue({
       ok: false,
       status: 400,
-      json: async () => ({ message: "User already exists" }),
+      json: async () => ({
+        message: "User already exists",
+      }),
     });
 
     await expect(
-      AuthService.register({ login: "exists", password: "pass" })
-    ).rejects.toThrow();
+      AuthService.register({ login: "existing@test.com", password: "pass123" })
+    ).rejects.toThrow("User already exists");
   });
 
-  test("should throw 500 on register server error", async () => {
+  test("should handle registration server error (500)", async () => {
     mockFetch.mockResolvedValue({
       ok: false,
       status: 500,
-      json: async () => ({}),
+      json: async () => ({
+        message: "Database error",
+      }),
     });
 
     await expect(
-      AuthService.register({ login: "user", password: "pass" })
-    ).rejects.toThrow(/Ошибка сервера/);
+      AuthService.register({ login: "test@test.com", password: "pass123" })
+    ).rejects.toThrow("Ошибка сервера. Попробуйте позже");
+  });
+
+  test("should handle registration with generic error", async () => {
+    mockFetch.mockResolvedValue({
+      ok: false,
+      status: 403,
+      json: async () => ({
+        message: "Forbidden",
+      }),
+    });
+
+    await expect(
+      AuthService.register({ login: "test@test.com", password: "pass123" })
+    ).rejects.toThrow("Forbidden");
+  });
+
+  test("should handle login with json parse error", async () => {
+    mockFetch.mockResolvedValue({
+      ok: false,
+      status: 401,
+      json: async () => {
+        throw new Error("Invalid JSON");
+      },
+    });
+
+    await expect(
+      AuthService.login({ login: "test@test.com", password: "pass123" })
+    ).rejects.toThrow();
+  });
+
+  test("should handle registration with json parse error", async () => {
+    mockFetch.mockResolvedValue({
+      ok: false,
+      status: 400,
+      json: async () => {
+        throw new Error("Invalid JSON");
+      },
+    });
+
+    await expect(
+      AuthService.register({ login: "test@test.com", password: "pass123" })
+    ).rejects.toThrow();
+  });
+
+  test("should handle login when userId is missing", async () => {
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        success: true,
+        message: "Login successful",
+        userName: "test",
+      }),
+    });
+
+    await expect(
+      AuthService.login({ login: "test@test.com", password: "pass123" })
+    ).rejects.toThrow();
+  });
+
+  test("should handle login when userName is missing", async () => {
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        success: true,
+        message: "Login successful",
+        userId: 1,
+      }),
+    });
+
+    await expect(
+      AuthService.login({ login: "test@test.com", password: "pass123" })
+    ).rejects.toThrow();
   });
 });

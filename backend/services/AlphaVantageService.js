@@ -46,10 +46,11 @@ export default class AlphaVantageService {
       };
     } catch (error) {
       console.error("AlphaVantageService.getQuote error:", error);
+      const mock = this.getMockQuote(symbol);
       return {
+        ...mock,
         success: false,
         error: error.message,
-        ...this.getMockQuote(symbol),
       };
     }
   }
