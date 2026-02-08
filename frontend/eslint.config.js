@@ -53,6 +53,6 @@ export default [
     },
   },
   {
-    ignores: ["coverage/**"],
+    ignores: ["coverage/**", "dist/**", "**/*.ts", "**/*.tsx"],
   },
 ];

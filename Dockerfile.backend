@@ -1,0 +1,24 @@
+# Backend Dockerfile
+FROM node:24-alpine
+
+WORKDIR /app
+
+# Установка wget для healthcheck
+RUN apk add --no-cache wget
+
+# Установка зависимостей
+COPY package*.json ./
+RUN npm ci --only=production
+
+# Копирование backend кода
+COPY backend/ ./backend/
+
+# Переменные окружения (переопределяются через docker-compose)
+ENV NODE_ENV=production
+ENV PORT=3500
+
+# Открываем порт
+EXPOSE 3500
+
+# Запуск сервера
+CMD ["node", "backend/server.js"]
