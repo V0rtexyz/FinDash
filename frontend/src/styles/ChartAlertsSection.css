@@ -1,0 +1,106 @@
+.chart-alerts-section {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.chart-alerts-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.chart-alerts-section-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1a202c;
+}
+
+.chart-alerts-section-add-btn {
+  padding: 8px 14px;
+  font-size: 13px;
+  border: 1px solid rgba(102, 126, 234, 0.5);
+  border-radius: 8px;
+  background: rgba(102, 126, 234, 0.1);
+  color: rgba(102, 126, 234, 1);
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.chart-alerts-section-add-btn:hover {
+  background: rgba(102, 126, 234, 0.2);
+}
+
+.chart-alerts-list,
+.chart-notifications-list {
+  margin-top: 12px;
+}
+
+.chart-alerts-list-label {
+  font-size: 13px;
+  color: #718096;
+  display: block;
+  margin-bottom: 6px;
+}
+
+.chart-alerts-list ul,
+.chart-notifications-list ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.chart-alerts-list-item,
+.chart-notifications-list-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: #f7fafc;
+  margin-bottom: 6px;
+  font-size: 14px;
+}
+
+.chart-notifications-list-item.read {
+  opacity: 0.7;
+}
+
+.chart-notifications-message {
+  flex: 1;
+}
+
+.chart-alerts-delete-btn {
+  padding: 2px 8px;
+  font-size: 18px;
+  line-height: 1;
+  border: none;
+  background: transparent;
+  color: #718096;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.chart-alerts-delete-btn:hover {
+  color: #c53030;
+  background: rgba(214, 48, 49, 0.1);
+}
+
+.chart-alerts-read-btn {
+  padding: 4px 10px;
+  font-size: 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  background: #fff;
+  color: #4a5568;
+  cursor: pointer;
+  margin-left: 8px;
+}
+
+.chart-alerts-read-btn:hover {
+  background: #edf2f7;
+}
