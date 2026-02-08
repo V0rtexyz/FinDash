@@ -77,104 +77,58 @@ class CurrencyAPIService {
     name?: string
   ): Promise<CurrencyData> {
     try {
-      // Get current rate
-      const ratesResponse = await fetch(
-        `${API_BASE_URL}/currencies/rates?symbols=${symbol}`
-      );
-
-      if (!ratesResponse.ok) {
-        throw new Error(`Failed to fetch rate for ${symbol}`);
-      }
-
-      const ratesData: RatesResponse = await ratesResponse.json();
-
-      // Check if rates exist (even if success is false, mock data might be available)
-      if (!ratesData.rates || !ratesData.rates[symbol]) {
-        throw new Error(`Currency ${symbol} not found or unavailable`);
-      }
-
-      const currentPrice = ratesData.rates[symbol];
-      const timestamp = ratesData.timestamp || Date.now();
-
-      // Get historical data for the last 30 days
       const endDate = new Date();
       const startDate = new Date();
       startDate.setDate(startDate.getDate() - 30);
-
       const startDateStr = startDate.toISOString().split("T")[0];
       const endDateStr = endDate.toISOString().split("T")[0];
 
+      const response = await fetch(
+        `${API_BASE_URL}/currencies/full/${symbol}?startDate=${startDateStr}&endDate=${endDateStr}`
+      );
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch data for ${symbol}`);
+      }
+
+      const data = await response.json();
+
+      if (!data.success || data.price == null) {
+        throw new Error(`Currency ${symbol} not found or unavailable`);
+      }
+
+      const currentPrice = data.price;
+      const timestamp = (data.timestamp || Math.floor(Date.now() / 1000)) * 1000;
       let history: PricePoint[] = [];
       let change24h = 0;
 
-      try {
-        const timeseriesResponse = await fetch(
-          `${API_BASE_URL}/currencies/timeseries/${symbol}?startDate=${startDateStr}&endDate=${endDateStr}`
-        );
-
-        if (timeseriesResponse.ok) {
-          const timeseriesData: TimeSeriesResponse =
-            await timeseriesResponse.json();
-
-          if (timeseriesData.success && timeseriesData.rates) {
-            history = ratesToHistory(timeseriesData.rates);
-
-            // Calculate 24h change
-            if (history.length >= 2) {
-              const yesterdayPrice = history[history.length - 2].price;
-              change24h =
-                ((currentPrice - yesterdayPrice) / yesterdayPrice) * 100;
-            }
-          }
-        }
-      } catch (err) {
-        console.warn(
-          "Failed to fetch historical data, generating daily data",
-          err
-        );
-        // Fallback: generate daily data for the last 30 days
-        history = [];
-        const daysBack = 30;
-        let dayPrice = currentPrice;
-
-        for (let i = daysBack; i >= 0; i--) {
-          const dayTimestamp = timestamp - i * 86400000; // i days ago
-          // Add some variance to make the chart more interesting
-          const variance = (Math.random() - 0.5) * 0.05; // ±2.5% variance
-          dayPrice = dayPrice * (1 + variance);
-
-          history.push({
-            timestamp: dayTimestamp,
-            price: dayPrice,
-          });
+      if (data.rates && Object.keys(data.rates).length > 0) {
+        history = ratesToHistory(data.rates);
+        if (history.length >= 2) {
+          const yesterdayPrice = history[history.length - 2].price;
+          change24h =
+            ((currentPrice - yesterdayPrice) / yesterdayPrice) * 100;
         }
       }
 
-      // Используем переданное имя валюты или символ как fallback
+      if (history.length === 0) {
+        const daysBack = 30;
+        let dayPrice = currentPrice;
+        for (let i = daysBack; i >= 0; i--) {
+          const dayTimestamp = timestamp - i * 86400000;
+          const variance = (Math.random() - 0.5) * 0.05;
+          dayPrice = dayPrice * (1 + variance);
+          history.push({ timestamp: dayTimestamp, price: dayPrice });
+        }
+      }
+
       return {
         symbol,
         name: name || symbol,
         price: currentPrice,
         change24h,
         timestamp,
-        history:
-          history.length > 0
-            ? history
-            : (() => {
-                // Generate 30 days of data if no history
-                const fallbackHistory: PricePoint[] = [];
-                let dayPrice = currentPrice;
-                for (let i = 30; i >= 0; i--) {
-                  const dayTimestamp = timestamp - i * 86400000;
-                  const variance = (Math.random() - 0.5) * 0.05;
-                  dayPrice = dayPrice * (1 + variance);
-                  fallbackHistory.push({
-                    timestamp: dayTimestamp,
-                    price: dayPrice,
-                  });
-                }
-                return fallbackHistory;
-              })(),
+        history,
       };
     } catch (error) {
       console.error("Error fetching currency data:", error);
@@ -192,43 +146,30 @@ class CurrencyAPIService {
       const startDateStr = startDate.toISOString().split("T")[0];
       const endDateStr = endDate.toISOString().split("T")[0];
 
-      // Получаем текущий курс и исторические данные
-      const [ratesResponse, timeseriesResponse] = await Promise.all([
-        fetch(`${API_BASE_URL}/currencies/rates?symbols=${symbol}`),
-        fetch(
-          `${API_BASE_URL}/currencies/timeseries/${symbol}?startDate=${startDateStr}&endDate=${endDateStr}`
-        ),
-      ]);
+      const response = await fetch(
+        `${API_BASE_URL}/currencies/full/${symbol}?startDate=${startDateStr}&endDate=${endDateStr}`
+      );
 
-      if (!ratesResponse.ok) {
-        throw new Error(`Failed to fetch rate for ${symbol}`);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch data for ${symbol}`);
       }
 
-      const ratesData: RatesResponse = await ratesResponse.json();
+      const data = await response.json();
 
-      // Check if rates exist (even if success is false, mock data might be available)
-      if (!ratesData.rates || !ratesData.rates[symbol]) {
+      if (!data.success || data.price == null) {
         throw new Error(`Currency ${symbol} not found or unavailable`);
       }
 
-      const currentPrice = ratesData.rates[symbol];
-      const timestamp = ratesData.timestamp || Date.now();
-
+      const currentPrice = data.price;
+      const timestamp = (data.timestamp || Math.floor(Date.now() / 1000)) * 1000;
       let history: PricePoint[] = [];
       let change24h = 0;
 
-      if (timeseriesResponse.ok) {
-        const timeseriesData: TimeSeriesResponse =
-          await timeseriesResponse.json();
-
-        if (timeseriesData.success && timeseriesData.rates) {
-          history = ratesToHistory(timeseriesData.rates);
-
-          // Calculate change based on period
-          if (history.length >= 2) {
-            const firstPrice = history[0].price;
-            change24h = ((currentPrice - firstPrice) / firstPrice) * 100;
-          }
+      if (data.rates && Object.keys(data.rates).length > 0) {
+        history = ratesToHistory(data.rates);
+        if (history.length >= 2) {
+          const firstPrice = history[0].price;
+          change24h = ((currentPrice - firstPrice) / firstPrice) * 100;
         }
       }
 

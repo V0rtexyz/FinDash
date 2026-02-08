@@ -1,21 +1,118 @@
-import { CurrencyData, PricePoint } from "./CurrencyAPI";
+import { CurrencyData } from "./CurrencyAPI";
 
-type MessageHandler = (data: CurrencyData) => void;
+type MessageHandler = (data: Partial<CurrencyData>) => void;
+
+const getWsUrl = (): string => {
+  if (import.meta.env.VITE_WS_URL) return import.meta.env.VITE_WS_URL;
+  const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+  return import.meta.env.DEV
+    ? `${protocol}//${window.location.host}/ws`
+    : `${protocol}//${window.location.host}/ws`;
+};
 
 class WebSocketServiceClass {
+  private ws: WebSocket | null = null;
   private handlers: Map<string, Set<MessageHandler>> = new Map();
-  private intervals: Map<string, NodeJS.Timeout> = new Map();
-  private lastPrices: Map<string, number> = new Map();
+  private subscribedSymbols: Set<string> = new Set();
+  private reconnectTimeout: ReturnType<typeof setTimeout> | null = null;
+  private reconnectAttempts = 0;
+  private readonly maxReconnectAttempts = 10;
+  private readonly reconnectDelayMs = 2000;
+  private connecting = false;
+
+  private connect(): void {
+    if (this.ws?.readyState === WebSocket.OPEN || this.connecting) return;
+
+    this.connecting = true;
+    const url = getWsUrl();
+
+    try {
+      this.ws = new WebSocket(url);
+
+      this.ws.onopen = () => {
+        this.connecting = false;
+        this.reconnectAttempts = 0;
+        this.sendSubscribeRates();
+      };
+
+      this.ws.onmessage = (event) => {
+        try {
+          const msg = JSON.parse(event.data as string);
+          if (msg.type === "rate:update" && msg.symbol) {
+            const data: Partial<CurrencyData> = {
+              symbol: msg.symbol,
+              name: msg.name,
+              price: msg.price,
+              change24h: msg.change24h,
+              timestamp: msg.timestamp,
+            };
+            const handlers = this.handlers.get(msg.symbol);
+            if (handlers) {
+              handlers.forEach((h) => h(data));
+            }
+          }
+        } catch (_e) {
+          // ignore parse errors
+        }
+      };
+
+      this.ws.onclose = () => {
+        this.connecting = false;
+        this.ws = null;
+        if (this.subscribedSymbols.size > 0 && this.reconnectAttempts < this.maxReconnectAttempts) {
+          this.reconnectTimeout = setTimeout(() => {
+            this.reconnectAttempts++;
+            this.connect();
+          }, this.reconnectDelayMs);
+        }
+      };
+
+      this.ws.onerror = () => {
+        // Errors are handled via onclose
+      };
+    } catch (_e) {
+      this.connecting = false;
+    }
+  }
+
+  private sendSubscribeRates(): void {
+    if (!this.ws || this.ws.readyState !== WebSocket.OPEN) return;
+    const symbols = Array.from(this.subscribedSymbols);
+    if (symbols.length === 0) return;
+
+    this.ws.send(
+      JSON.stringify({
+        type: "subscribe:rates",
+        symbols,
+      })
+    );
+  }
+
+  private sendUnsubscribeRates(symbols: string[]): void {
+    if (!this.ws || this.ws.readyState !== WebSocket.OPEN) return;
+    if (symbols.length === 0) return;
+
+    this.ws.send(
+      JSON.stringify({
+        type: "unsubscribe:rates",
+        symbols,
+      })
+    );
+  }
 
   subscribe(symbol: string, handler: MessageHandler): () => void {
     if (!this.handlers.has(symbol)) {
       this.handlers.set(symbol, new Set());
     }
-
     this.handlers.get(symbol)!.add(handler);
 
-    if (!this.intervals.has(symbol)) {
-      this.startUpdates(symbol);
+    const wasEmpty = this.subscribedSymbols.size === 0;
+    this.subscribedSymbols.add(symbol);
+
+    if (wasEmpty) {
+      this.connect();
+    } else {
+      this.sendSubscribeRates();
     }
 
     return () => {
@@ -23,100 +120,27 @@ class WebSocketServiceClass {
       if (handlers) {
         handlers.delete(handler);
         if (handlers.size === 0) {
-          this.stopUpdates(symbol);
+          this.handlers.delete(symbol);
+          this.subscribedSymbols.delete(symbol);
+          this.sendUnsubscribeRates([symbol]);
         }
       }
     };
   }
 
-  private startUpdates(symbol: string) {
-    const basePrice = this.lastPrices.get(symbol) || this.getBasePrice(symbol);
-    let currentPrice = basePrice;
-
-    const interval = setInterval(() => {
-      const volatility = 0.005;
-      const change = (Math.random() - 0.5) * 2 * volatility;
-      currentPrice = currentPrice * (1 + change);
-
-      const previousPrice = this.lastPrices.get(symbol) || currentPrice;
-      const change24h = ((currentPrice - previousPrice) / previousPrice) * 100;
-
-      this.lastPrices.set(symbol, currentPrice);
-
-      const data: CurrencyData = {
-        symbol,
-        name: this.getCurrencyName(symbol),
-        price: currentPrice,
-        change24h,
-        timestamp: Date.now(),
-        history: this.generateRecentHistory(currentPrice),
-      };
-
-      const handlers = this.handlers.get(symbol);
-      if (handlers) {
-        handlers.forEach((handler) => handler(data));
-      }
-    }, 2000);
-
-    this.intervals.set(symbol, interval);
-  }
-
-  private stopUpdates(symbol: string) {
-    const interval = this.intervals.get(symbol);
-    if (interval) {
-      clearInterval(interval);
-      this.intervals.delete(symbol);
+  disconnect(): void {
+    if (this.reconnectTimeout) {
+      clearTimeout(this.reconnectTimeout);
+      this.reconnectTimeout = null;
     }
-    this.handlers.delete(symbol);
-  }
-
-  private getBasePrice(symbol: string): number {
-    const prices: Record<string, number> = {
-      BTC: 45000,
-      ETH: 2500,
-      USDT: 1,
-      BNB: 350,
-      XRP: 0.6,
-      SOL: 100,
-      ADA: 0.5,
-    };
-    return prices[symbol] || 100;
-  }
-
-  private getCurrencyName(symbol: string): string {
-    const names: Record<string, string> = {
-      BTC: "Bitcoin",
-      ETH: "Ethereum",
-      USDT: "Tether",
-      BNB: "Binance Coin",
-      XRP: "Ripple",
-      SOL: "Solana",
-      ADA: "Cardano",
-    };
-    return names[symbol] || symbol;
-  }
-
-  private generateRecentHistory(currentPrice: number): PricePoint[] {
-    const history: PricePoint[] = [];
-    const now = Date.now();
-
-    for (let i = 19; i >= 0; i--) {
-      const variance = (Math.random() - 0.5) * 0.02;
-      history.push({
-        timestamp: now - i * 60000,
-        price: currentPrice * (1 + variance),
-      });
+    this.reconnectAttempts = this.maxReconnectAttempts;
+    if (this.ws) {
+      this.ws.close();
+      this.ws = null;
     }
-
-    return history;
-  }
-
-  disconnect() {
-    this.intervals.forEach((interval, symbol) => {
-      clearInterval(interval);
-    });
-    this.intervals.clear();
     this.handlers.clear();
+    this.subscribedSymbols.clear();
+    this.connecting = false;
   }
 }
 

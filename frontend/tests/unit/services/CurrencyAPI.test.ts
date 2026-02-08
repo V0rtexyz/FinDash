@@ -29,26 +29,17 @@ describe("CurrencyAPI", () => {
   });
 
   test("should fetch currency data for valid symbol", async () => {
-    // Mock rates response
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({
-        success: true,
-        rates: { BTC: 50000 },
-        timestamp: Date.now(),
-      }),
-    });
-
-    // Mock timeseries response
     mockFetch.mockResolvedValueOnce({
       ok: true,
       json: async () => ({
         success: true,
         symbol: "BTC",
-        rates: [
-          { date: "2024-01-01", rate: 48000 },
-          { date: "2024-01-02", rate: 50000 },
-        ],
+        price: 50000,
+        timestamp: Math.floor(Date.now() / 1000),
+        rates: {
+          "2024-01-01": 48000,
+          "2024-01-02": 50000,
+        },
       }),
     });
 
@@ -64,7 +55,7 @@ describe("CurrencyAPI", () => {
       ok: true,
       json: async () => ({
         success: false,
-        rates: {},
+        price: null,
       }),
     });
 
@@ -76,17 +67,10 @@ describe("CurrencyAPI", () => {
       ok: true,
       json: async () => ({
         success: true,
-        rates: { ETH: 3000 },
-        timestamp: Date.now(),
-      }),
-    });
-
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({
-        success: true,
         symbol: "ETH",
-        rates: [{ date: "2024-01-01", rate: 2900 }],
+        price: 3000,
+        timestamp: Math.floor(Date.now() / 1000),
+        rates: { "2024-01-01": 2900 },
       }),
     });
 
