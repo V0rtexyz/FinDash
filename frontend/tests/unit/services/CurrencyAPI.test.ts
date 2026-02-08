@@ -414,26 +414,19 @@ describe("CurrencyAPI", () => {
   });
 
   test("should fetch currency data for report", async () => {
-    mockFetch
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({
-          success: true,
-          rates: { BTC: 50000 },
-          timestamp: Date.now(),
-        }),
-      })
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({
-          success: true,
-          symbol: "BTC",
-          rates: [
-            { date: "2024-01-01", rate: 48000 },
-            { date: "2024-01-31", rate: 50000 },
-          ],
-        }),
-      });
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        success: true,
+        symbol: "BTC",
+        price: 50000,
+        timestamp: Math.floor(Date.now() / 1000),
+        rates: {
+          "2024-01-01": 48000,
+          "2024-01-31": 50000,
+        },
+      }),
+    });
 
     const data = await CurrencyAPI.fetchCurrencyDataForReport(
       "BTC",
@@ -460,15 +453,10 @@ describe("CurrencyAPI", () => {
   });
 
   test("should throw when currency not found in report", async () => {
-    mockFetch
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ success: true, rates: {} }),
-      })
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ success: true, symbol: "INVALID", rates: [] }),
-      });
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ success: false, price: null }),
+    });
 
     await expect(
       CurrencyAPI.fetchCurrencyDataForReport(
@@ -525,16 +513,16 @@ describe("CurrencyAPI", () => {
   });
 
   test("should use fallback history when timeseries fails", async () => {
-    mockFetch
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({
-          success: true,
-          rates: { SOL: 100 },
-          timestamp: Date.now(),
-        }),
-      })
-      .mockRejectedValueOnce(new Error("Network error"));
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        success: true,
+        symbol: "SOL",
+        price: 100,
+        timestamp: Math.floor(Date.now() / 1000),
+        rates: {},
+      }),
+    });
 
     const data = await CurrencyAPI.fetchCurrencyData("SOL", "Solana");
     expect(data.symbol).toBe("SOL");
