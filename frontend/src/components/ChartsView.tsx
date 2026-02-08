@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from "react";
-import { Line, Bar, Chart } from "react-chartjs-2";
+import { Line, Bar } from "react-chartjs-2";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -14,10 +14,6 @@ import {
   ChartOptions,
 } from "chart.js";
 import zoomPlugin from "chartjs-plugin-zoom";
-import {
-  CandlestickController,
-  CandlestickElement,
-} from "chartjs-chart-financial";
 import { useCurrency } from "../context/CurrencyContext";
 import { UpdateGraphicsService } from "../services/UpdateGraphicsService";
 import {
@@ -40,9 +36,7 @@ ChartJS.register(
   Tooltip,
   Legend,
   Filler,
-  zoomPlugin,
-  CandlestickController,
-  CandlestickElement
+  zoomPlugin
 );
 
 const PERIOD_LABELS: { value: ChartPeriod; label: string }[] = [
@@ -54,13 +48,12 @@ const PERIOD_LABELS: { value: ChartPeriod; label: string }[] = [
 ];
 
 const CHART_TYPE_LABELS: {
-  value: "line" | "area" | "bar" | "candlestick";
+  value: "line" | "area" | "bar";
   label: string;
 }[] = [
   { value: "line", label: "Линия" },
   { value: "area", label: "Площадь" },
   { value: "bar", label: "Столбики" },
-  { value: "candlestick", label: "Свечи" },
 ];
 
 const defaultScaleOptions = {
@@ -92,7 +85,7 @@ export function ChartsView() {
 
   const [chartPeriod, setChartPeriod] = useState<ChartPeriod>("1M");
   const [chartType, setChartType] = useState<
-    "line" | "area" | "bar" | "candlestick"
+    "line" | "area" | "bar"
   >("line");
   const [chartDataLocal, setChartDataLocal] = useState<CurrencyData | null>(
     null
@@ -235,24 +228,6 @@ export function ChartsView() {
     })),
   };
 
-  const candlestickData =
-    UpdateGraphicsService.formatCandlestickData(displayData);
-  if (candlestickData.datasets.length) {
-    candlestickData.datasets[0] = {
-      ...candlestickData.datasets[0],
-      borderColors: {
-        up: "rgba(72, 187, 120, 1)",
-        down: "rgba(214, 48, 49, 1)",
-        unchanged: "rgba(113, 128, 150, 1)",
-      },
-      backgroundColors: {
-        up: "rgba(72, 187, 120, 0.5)",
-        down: "rgba(214, 48, 49, 0.5)",
-        unchanged: "rgba(113, 128, 150, 0.5)",
-      },
-    };
-  }
-
   const commonOptions: ChartOptions<"line"> = {
     responsive: true,
     maintainAspectRatio: false,
@@ -304,11 +279,6 @@ export function ChartsView() {
     },
     scales: defaultScaleOptions,
     interaction: { mode: "nearest", axis: "x", intersect: false },
-  };
-
-  const candlestickOptions = {
-    ...commonOptions,
-    scales: defaultScaleOptions,
   };
 
   return (
@@ -416,18 +386,11 @@ export function ChartsView() {
             data={lineChartData}
             options={commonOptions}
           />
-        ) : chartType === "bar" ? (
+        ) : (
           <Bar
             ref={chartRef as React.RefObject<ChartJS<"bar">>}
             data={barChartData}
             options={commonOptions as ChartOptions<"bar">}
-          />
-        ) : (
-          <Chart
-            ref={chartRef}
-            type="candlestick"
-            data={candlestickData}
-            options={candlestickOptions}
           />
         )}
       </div>
