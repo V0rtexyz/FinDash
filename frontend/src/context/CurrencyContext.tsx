@@ -14,6 +14,7 @@ interface CurrencyContextType {
   selectedCurrency: string | null;
   selectCurrency: (symbol: string) => void;
   addCurrency: (data: CurrencyData) => void;
+  mergeCurrencyUpdate: (symbol: string, partial: Partial<CurrencyData>) => void;
   removeCurrency: (symbol: string) => void;
   subscribeToCurrency: (symbol: string) => void;
   unsubscribeFromCurrency: (symbol: string) => void;
@@ -40,6 +41,26 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
+  const mergeCurrencyUpdate = useCallback(
+    (symbol: string, partial: Partial<CurrencyData>) => {
+      setCurrencies((prev) => {
+        const next = new Map(prev);
+        const existing = prev.get(symbol);
+        const merged: CurrencyData = {
+          symbol,
+          name: partial.name ?? existing?.name ?? symbol,
+          price: partial.price ?? existing?.price ?? 0,
+          change24h: partial.change24h ?? existing?.change24h ?? 0,
+          timestamp: partial.timestamp ?? existing?.timestamp ?? Date.now(),
+          history: existing?.history ?? [],
+        };
+        next.set(symbol, merged);
+        return next;
+      });
+    },
+    []
+  );
+
   const removeCurrency = useCallback((symbol: string) => {
     setCurrencies((prev) => {
       const next = new Map(prev);
@@ -51,13 +72,10 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
   const subscribeToCurrency = useCallback(
     (symbol: string) => {
       setSubscriptions((prev) => {
-        // Проверяем есть ли уже подписка
-        if (prev.has(symbol)) {
-          return prev;
-        }
+        if (prev.has(symbol)) return prev;
 
         const unsubscribe = WebSocketService.subscribe(symbol, (data) => {
-          addCurrency(data);
+          mergeCurrencyUpdate(symbol, data);
         });
 
         const next = new Map(prev);
@@ -65,7 +83,7 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
         return next;
       });
     },
-    [addCurrency]
+    [mergeCurrencyUpdate]
   );
 
   const unsubscribeFromCurrency = useCallback((symbol: string) => {
@@ -97,6 +115,7 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
     selectedCurrency,
     selectCurrency,
     addCurrency,
+    mergeCurrencyUpdate,
     removeCurrency,
     subscribeToCurrency,
     unsubscribeFromCurrency,
