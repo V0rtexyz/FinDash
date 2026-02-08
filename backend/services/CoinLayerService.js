@@ -116,9 +116,11 @@ export default class CoinLayerService {
    * @param {string} symbol - Currency symbol
    * @param {string} startDate - Start date in YYYY-MM-DD format
    * @param {string} endDate - End date in YYYY-MM-DD format
+   * @param {Object} [opts] - Options
+   * @param {number} [opts.preFetchedLiveRate] - Pre-fetched live rate to avoid duplicate getLiveRates
    * @returns {Promise<Object>}
    */
-  async getTimeSeries(symbol, startDate, endDate) {
+  async getTimeSeries(symbol, startDate, endDate, opts = {}) {
     try {
       const dates = this.getDateRange(startDate, endDate);
 
@@ -135,13 +137,15 @@ export default class CoinLayerService {
       }
 
       // 2. Fallback: historical API (one request per date) + get live rate for fill
-      let liveRate = null;
-      try {
-        const live = await this.getLiveRates([symbol]);
-        if (live.rates && live.rates[symbol] > 0) {
-          liveRate = live.rates[symbol];
-        }
-      } catch (_e) {}
+      let liveRate = opts.preFetchedLiveRate ?? null;
+      if (liveRate == null) {
+        try {
+          const live = await this.getLiveRates([symbol]);
+          if (live.rates && live.rates[symbol] > 0) {
+            liveRate = live.rates[symbol];
+          }
+        } catch (_e) {}
+      }
 
       const rawRates = {};
       for (const date of dates) {
