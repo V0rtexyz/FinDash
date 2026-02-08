@@ -100,15 +100,17 @@ router.get("/historical/:date", async (req, res) => {
   }
 });
 
+const MAX_TIMESERIES_DAYS = 365;
+
 /**
  * GET /api/currencies/timeseries/:symbol
  * Get time series data for a currency
- * Query params: startDate, endDate (YYYY-MM-DD format)
+ * Query params: startDate, endDate (YYYY-MM-DD format). Max range 365 days.
  */
 router.get("/timeseries/:symbol", async (req, res) => {
   try {
     const { symbol } = req.params;
-    const { startDate, endDate } = req.query;
+    let { startDate, endDate } = req.query;
 
     if (!startDate || !endDate) {
       return res.status(400).json({
@@ -117,7 +119,6 @@ router.get("/timeseries/:symbol", async (req, res) => {
       });
     }
 
-    // Validate date format
     if (
       !/^\d{4}-\d{2}-\d{2}$/.test(startDate) ||
       !/^\d{4}-\d{2}-\d{2}$/.test(endDate)
@@ -128,6 +129,22 @@ router.get("/timeseries/:symbol", async (req, res) => {
       });
     }
 
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    if (end < start) {
+      return res.status(400).json({
+        success: false,
+        message: "endDate must be after startDate",
+      });
+    }
+
+    const daysDiff = Math.ceil((end - start) / (24 * 60 * 60 * 1000));
+    if (daysDiff > MAX_TIMESERIES_DAYS) {
+      const newStart = new Date(end);
+      newStart.setDate(newStart.getDate() - MAX_TIMESERIES_DAYS);
+      startDate = newStart.toISOString().split("T")[0];
+    }
+
     const coinLayerService = req.app.get("coinLayerService");
     const result = await coinLayerService.getTimeSeries(
       symbol,
@@ -135,12 +152,18 @@ router.get("/timeseries/:symbol", async (req, res) => {
       endDate
     );
 
+    const ratesObj = result.rates || {};
+    const ratesArray = Object.entries(ratesObj)
+      .filter(([, rate]) => rate != null)
+      .map(([date, rate]) => ({ date, rate }))
+      .sort((a, b) => a.date.localeCompare(b.date));
+
     res.json({
       success: result.success,
       symbol: result.symbol,
       startDate: result.startDate,
       endDate: result.endDate,
-      rates: result.rates,
+      rates: ratesArray,
       error: result.error,
     });
   } catch (error) {
