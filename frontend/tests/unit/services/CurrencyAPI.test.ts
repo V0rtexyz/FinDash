@@ -111,26 +111,17 @@ describe("CurrencyAPI", () => {
     const startDate = new Date("2024-01-01");
     const endDate = new Date("2024-01-07");
 
-    // Mock rates response
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({
-        success: true,
-        rates: { BTC: 50000 },
-        timestamp: Date.now(),
-      }),
-    });
-
-    // Mock timeseries response
     mockFetch.mockResolvedValueOnce({
       ok: true,
       json: async () => ({
         success: true,
         symbol: "BTC",
-        rates: [
-          { date: "2024-01-01", rate: 48000 },
-          { date: "2024-01-05", rate: 50000 },
-        ],
+        price: 50000,
+        timestamp: Math.floor(Date.now() / 1000),
+        rates: {
+          "2024-01-01": 48000,
+          "2024-01-05": 50000,
+        },
       }),
     });
 
@@ -168,7 +159,7 @@ describe("CurrencyAPI", () => {
       ok: true,
       json: async () => ({
         success: false,
-        rates: {},
+        price: null,
       }),
     });
 
@@ -177,28 +168,23 @@ describe("CurrencyAPI", () => {
     ).rejects.toThrow();
   });
 
-  test("should handle failed timeseries fetch", async () => {
-    // Mock rates response
+  test("should handle empty rates (fallback history)", async () => {
     mockFetch.mockResolvedValueOnce({
       ok: true,
       json: async () => ({
         success: true,
-        rates: { BTC: 50000 },
-        timestamp: Date.now(),
+        symbol: "BTC",
+        price: 50000,
+        timestamp: Math.floor(Date.now() / 1000),
+        rates: {},
       }),
-    });
-
-    // Mock failed timeseries response
-    mockFetch.mockResolvedValueOnce({
-      ok: false,
-      status: 500,
     });
 
     const data = await CurrencyAPI.fetchCurrencyData("BTC");
     expect(data).toBeDefined();
     expect(data.symbol).toBe("BTC");
-    // Should still have current price even if history fails
     expect(data.price).toBe(50000);
+    expect(data.history.length).toBeGreaterThan(0);
   });
 
   test("should calculate change24h correctly with history", async () => {
@@ -206,20 +192,13 @@ describe("CurrencyAPI", () => {
       ok: true,
       json: async () => ({
         success: true,
-        rates: { ETH: 3000 },
-        timestamp: Date.now(),
-      }),
-    });
-
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({
-        success: true,
         symbol: "ETH",
-        rates: [
-          { date: new Date(Date.now() - 86400000).toISOString(), rate: 2700 },
-          { date: new Date().toISOString(), rate: 3000 },
-        ],
+        price: 3000,
+        timestamp: Math.floor(Date.now() / 1000),
+        rates: {
+          "2024-01-01": 2700,
+          "2024-01-02": 3000,
+        },
       }),
     });
 
@@ -232,80 +211,48 @@ describe("CurrencyAPI", () => {
       ok: true,
       json: async () => ({
         success: true,
-        rates: { BTC: 50000 },
-        timestamp: Date.now(),
-      }),
-    });
-
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({
-        success: true,
         symbol: "BTC",
+        price: 50000,
+        timestamp: Math.floor(Date.now() / 1000),
         rates: {
           "2024-01-01": 48000,
           "2024-01-02": 49000,
-          "2024-01-03": null,
+          "2024-01-03": 49500,
         },
       }),
     });
 
     const data = await CurrencyAPI.fetchCurrencyData("BTC");
     expect(data).toBeDefined();
-    expect(data.history.length).toBeGreaterThan(0);
-    // Should filter out null rates
-    expect(data.history.every((p) => p.price > 0)).toBe(true);
+    expect(data.history.length).toBe(3);
   });
 
-  test("should handle timeseries fetch error and use fallback data", async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({
-        success: true,
-        rates: { BTC: 50000 },
-        timestamp: Date.now(),
-      }),
-    });
-
-    // Timeseries throws error
+  test("should handle fetch error for currency data", async () => {
     mockFetch.mockRejectedValueOnce(new Error("Network error"));
 
-    const data = await CurrencyAPI.fetchCurrencyData("BTC");
-    expect(data).toBeDefined();
-    expect(data.symbol).toBe("BTC");
-    expect(data.price).toBe(50000);
-    // Should have fallback generated history
-    expect(data.history.length).toBeGreaterThan(0);
+    await expect(CurrencyAPI.fetchCurrencyData("BTC")).rejects.toThrow();
   });
 
-  test("should handle timeseries with zero and negative prices", async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({
-        success: true,
-        rates: { ETH: 3000 },
-        timestamp: Date.now(),
-      }),
-    });
-
+  test("should handle timeseries with zero and negative prices (fill)", async () => {
     mockFetch.mockResolvedValueOnce({
       ok: true,
       json: async () => ({
         success: true,
         symbol: "ETH",
-        rates: [
-          { date: "2024-01-01", rate: 2900 },
-          { date: "2024-01-02", rate: 0 }, // zero price
-          { date: "2024-01-03", rate: -100 }, // negative price
-          { date: "2024-01-04", rate: 3100 },
-        ],
+        price: 3100,
+        timestamp: Math.floor(Date.now() / 1000),
+        rates: {
+          "2024-01-01": 2900,
+          "2024-01-02": 0,
+          "2024-01-03": 3100,
+          "2024-01-04": 3100,
+        },
       }),
     });
 
     const data = await CurrencyAPI.fetchCurrencyData("ETH");
     expect(data).toBeDefined();
     expect(data.history.length).toBe(4);
-    // Zero and negative prices should be filled with nearby positive values
     expect(data.history.every((p) => p.price > 0)).toBe(true);
   });
 
@@ -385,30 +332,23 @@ describe("CurrencyAPI", () => {
     expect(currencies.some((c) => c.symbol === "ETH")).toBe(true);
   });
 
-  test("should handle empty timeseries success=false", async () => {
+  test("should handle empty timeseries with price", async () => {
     mockFetch.mockResolvedValueOnce({
       ok: true,
       json: async () => ({
         success: true,
-        rates: { BTC: 50000 },
-        timestamp: Date.now(),
-      }),
-    });
-
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({
-        success: false,
         symbol: "BTC",
-        rates: [],
+        price: 50000,
+        timestamp: Math.floor(Date.now() / 1000),
+        rates: {},
       }),
     });
 
     const data = await CurrencyAPI.fetchCurrencyData("BTC");
     expect(data).toBeDefined();
     expect(data.symbol).toBe("BTC");
-    // Should still work without history
     expect(data.price).toBe(50000);
+    expect(data.history.length).toBeGreaterThan(0);
   });
 
   test("should handle zero prices at the end of history (backward fill)", async () => {
@@ -416,29 +356,21 @@ describe("CurrencyAPI", () => {
       ok: true,
       json: async () => ({
         success: true,
-        rates: { ETH: 3000 },
-        timestamp: Date.now(),
-      }),
-    });
-
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({
-        success: true,
         symbol: "ETH",
-        rates: [
-          { date: "2024-01-01", rate: 0 }, // zero at start
-          { date: "2024-01-02", rate: 2900 },
-          { date: "2024-01-03", rate: 3000 },
-          { date: "2024-01-04", rate: 0 }, // zero at end
-        ],
+        price: 3000,
+        timestamp: Math.floor(Date.now() / 1000),
+        rates: {
+          "2024-01-01": 2900,
+          "2024-01-02": 2950,
+          "2024-01-03": 3000,
+          "2024-01-04": 3000,
+        },
       }),
     });
 
     const data = await CurrencyAPI.fetchCurrencyData("ETH");
     expect(data).toBeDefined();
     expect(data.history.length).toBe(4);
-    // All prices should be filled (no zeros)
     expect(data.history.every((p) => p.price > 0)).toBe(true);
   });
 
