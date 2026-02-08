@@ -67,7 +67,9 @@ class AlertServiceClass {
     userId: number,
     unreadOnly = false
   ): Promise<Notification[]> {
-    const url = `${API_BASE}/notifications?${this.getUserIdParam(userId)}${unreadOnly ? "&unreadOnly=true" : ""}`;
+    const url = `${API_BASE}/notifications?${this.getUserIdParam(userId)}${
+      unreadOnly ? "&unreadOnly=true" : ""
+    }`;
     const res = await fetch(url);
     if (!res.ok) throw new Error("Failed to fetch notifications");
     const data = await res.json();
@@ -79,7 +81,9 @@ class AlertServiceClass {
     notificationId: number
   ): Promise<void> {
     const res = await fetch(
-      `${API_BASE}/notifications/${notificationId}/read?${this.getUserIdParam(userId)}`,
+      `${API_BASE}/notifications/${notificationId}/read?${this.getUserIdParam(
+        userId
+      )}`,
       { method: "PATCH" }
     );
     if (!res.ok) throw new Error("Failed to mark as read");

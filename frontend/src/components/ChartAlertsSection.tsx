@@ -52,7 +52,9 @@ export function ChartAlertsSection({
     try {
       await AlertService.markNotificationRead(userId, id);
       setNotifications((prev) =>
-        prev.map((n) => (n.id === id ? { ...n, readAt: new Date().toISOString() } : n))
+        prev.map((n) =>
+          n.id === id ? { ...n, readAt: new Date().toISOString() } : n
+        )
       );
     } catch (e) {
       console.error(e);
@@ -92,8 +94,8 @@ export function ChartAlertsSection({
             {alerts.map((a) => (
               <li key={a.id} className="chart-alerts-list-item">
                 <span>
-                  {a.symbol} {a.condition === "above" ? "≥" : "≤"}{" "}
-                  ${a.targetValue.toLocaleString("en-US")}
+                  {a.symbol} {a.condition === "above" ? "≥" : "≤"} $
+                  {a.targetValue.toLocaleString("en-US")}
                 </span>
                 <button
                   type="button"
@@ -116,7 +118,9 @@ export function ChartAlertsSection({
             {notifications.slice(0, 10).map((n) => (
               <li
                 key={n.id}
-                className={`chart-notifications-list-item ${n.readAt ? "read" : ""}`}
+                className={`chart-notifications-list-item ${
+                  n.readAt ? "read" : ""
+                }`}
               >
                 <span className="chart-notifications-message">{n.message}</span>
                 {!n.readAt && (

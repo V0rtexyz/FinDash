@@ -171,7 +171,9 @@ class UpdateGraphicsServiceClass {
     };
   }
 
-  formatCandlestickData(currencyData: CurrencyData | undefined): CandlestickChartData {
+  formatCandlestickData(
+    currencyData: CurrencyData | undefined
+  ): CandlestickChartData {
     if (!currencyData || !currencyData.history.length) {
       return { datasets: [] };
     }

@@ -1,12 +1,14 @@
-import { CurrencyAPI } from "../../../src/services/CurrencyAPI";
+import {
+  CurrencyAPI,
+  getDateRangeForPeriod,
+} from "../../../src/services/CurrencyAPI";
 
-// Mock fetch globally
 const mockFetch = jest.fn();
 global.fetch = mockFetch;
 
 describe("CurrencyAPI", () => {
   beforeEach(() => {
-    mockFetch.mockClear();
+    mockFetch.mockReset();
   });
 
   test("should fetch available currencies", async () => {
@@ -105,8 +107,158 @@ describe("CurrencyAPI", () => {
     const currencies = await CurrencyAPI.fetchAvailableCurrencies();
     expect(currencies).toBeDefined();
     expect(Array.isArray(currencies)).toBe(true);
-    // Should return fallback currencies
     expect(currencies.length).toBeGreaterThan(0);
     expect(currencies.some((c) => c.symbol === "BTC")).toBe(true);
+  });
+
+  test("should fetch currency data for report", async () => {
+    mockFetch
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          success: true,
+          rates: { BTC: 50000 },
+          timestamp: Date.now(),
+        }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          success: true,
+          symbol: "BTC",
+          rates: [
+            { date: "2024-01-01", rate: 48000 },
+            { date: "2024-01-31", rate: 50000 },
+          ],
+        }),
+      });
+
+    const data = await CurrencyAPI.fetchCurrencyDataForReport(
+      "BTC",
+      new Date("2024-01-01"),
+      new Date("2024-01-31"),
+      "Bitcoin"
+    );
+    expect(data.symbol).toBe("BTC");
+    expect(data.name).toBe("Bitcoin");
+    expect(data.price).toBe(50000);
+    expect(data.history.length).toBe(2);
+  });
+
+  test("should throw when fetchCurrencyDataForReport fails", async () => {
+    mockFetch.mockResolvedValueOnce({ ok: false });
+
+    await expect(
+      CurrencyAPI.fetchCurrencyDataForReport(
+        "BTC",
+        new Date("2024-01-01"),
+        new Date("2024-01-31")
+      )
+    ).rejects.toThrow();
+  });
+
+  test("should throw when currency not found in report", async () => {
+    mockFetch
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ success: true, rates: {} }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ success: true, symbol: "INVALID", rates: [] }),
+      });
+
+    await expect(
+      CurrencyAPI.fetchCurrencyDataForReport(
+        "INVALID",
+        new Date("2024-01-01"),
+        new Date("2024-01-31")
+      )
+    ).rejects.toThrow();
+  });
+
+  test("should handle fetchAvailableCurrencies with array format", async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        success: true,
+        currencies: [
+          { symbol: "BTC", name: "Bitcoin" },
+          { symbol: "ETH", name: "Ethereum" },
+        ],
+      }),
+    });
+
+    const currencies = await CurrencyAPI.fetchAvailableCurrencies();
+    expect(currencies).toHaveLength(2);
+  });
+
+  test("should handle fetchAvailableCurrencies with object format", async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        success: true,
+        currencies: {
+          BTC: { name: "Bitcoin" },
+          ETH: "Ethereum",
+        },
+      }),
+    });
+
+    const currencies = await CurrencyAPI.fetchAvailableCurrencies();
+    expect(currencies.length).toBeGreaterThanOrEqual(2);
+  });
+
+  test("should return fallback when fetchAvailableCurrencies response not ok", async () => {
+    mockFetch.mockResolvedValueOnce({ ok: false });
+
+    const currencies = await CurrencyAPI.fetchAvailableCurrencies();
+    expect(currencies.some((c) => c.symbol === "BTC")).toBe(true);
+  });
+
+  test("should throw when rates fetch fails", async () => {
+    mockFetch.mockResolvedValueOnce({ ok: false });
+
+    await expect(CurrencyAPI.fetchCurrencyData("BTC")).rejects.toThrow();
+  });
+
+  test("should use fallback history when timeseries fails", async () => {
+    mockFetch
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          success: true,
+          rates: { SOL: 100 },
+          timestamp: Date.now(),
+        }),
+      })
+      .mockRejectedValueOnce(new Error("Network error"));
+
+    const data = await CurrencyAPI.fetchCurrencyData("SOL", "Solana");
+    expect(data.symbol).toBe("SOL");
+    expect(data.price).toBe(100);
+    expect(data.history.length).toBeGreaterThan(0);
+  });
+});
+
+describe("getDateRangeForPeriod", () => {
+  test("should return date range for 1D", () => {
+    const { startDate, endDate } = getDateRangeForPeriod("1D");
+    expect(endDate).toBeInstanceOf(Date);
+    expect(startDate).toBeInstanceOf(Date);
+    const diff = endDate.getTime() - startDate.getTime();
+    expect(diff).toBeGreaterThanOrEqual(23 * 60 * 60 * 1000);
+    expect(diff).toBeLessThanOrEqual(25 * 60 * 60 * 1000);
+  });
+
+  test("should return date range for 1W", () => {
+    const { startDate, endDate } = getDateRangeForPeriod("1W");
+    const diff = endDate.getTime() - startDate.getTime();
+    expect(diff).toBeGreaterThanOrEqual(6 * 24 * 60 * 60 * 1000);
+  });
+
+  test("should return date range for 1M", () => {
+    const { startDate, endDate } = getDateRangeForPeriod("1M");
+    expect(startDate.getTime()).toBeLessThan(endDate.getTime());
   });
 });

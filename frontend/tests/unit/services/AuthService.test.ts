@@ -86,4 +86,89 @@ describe("AuthService", () => {
     expect(localStorage.getItem("token")).toBeNull();
     expect(localStorage.getItem("user")).toBeNull();
   });
+
+  test("should throw 401 with custom message", async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: false,
+      status: 401,
+      json: async () => ({ message: "Invalid credentials" }),
+    });
+
+    await expect(
+      AuthService.login({ login: "user", password: "wrong" })
+    ).rejects.toThrow("Invalid credentials");
+  });
+
+  test("should throw 500 server error on login", async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: false,
+      status: 500,
+      json: async () => ({}),
+    });
+
+    await expect(
+      AuthService.login({ login: "user", password: "pass" })
+    ).rejects.toThrow(/Ошибка сервера/);
+  });
+
+  test("should throw when login success but no userId/userName", async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        success: true,
+        message: "OK",
+        userId: undefined,
+        userName: undefined,
+      }),
+    });
+
+    await expect(
+      AuthService.login({ login: "user", password: "pass" })
+    ).rejects.toThrow();
+  });
+
+  test("should register successfully", async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        success: true,
+        message: "Registered",
+        userId: 2,
+      }),
+    });
+
+    const result = await AuthService.register({
+      login: "newuser",
+      password: "pass123",
+    });
+    expect(result.success).toBe(true);
+    expect(mockFetch).toHaveBeenCalledWith(
+      expect.stringContaining("/api/auth/register"),
+      expect.any(Object)
+    );
+  });
+
+  test("should throw 400 on register failure", async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: false,
+      status: 400,
+      json: async () => ({ message: "User already exists" }),
+    });
+
+    await expect(
+      AuthService.register({ login: "exists", password: "pass" })
+    ).rejects.toThrow();
+  });
+
+  test("should throw 500 on register server error", async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: false,
+      status: 500,
+      json: async () => ({}),
+    });
+
+    await expect(
+      AuthService.register({ login: "user", password: "pass" })
+    ).rejects.toThrow(/Ошибка сервера/);
+  });
 });

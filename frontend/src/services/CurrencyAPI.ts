@@ -297,9 +297,10 @@ class CurrencyAPIService {
 
 export type ChartPeriod = "1D" | "1W" | "1M" | "1Y" | "ALL";
 
-export function getDateRangeForPeriod(
-  period: ChartPeriod
-): { startDate: Date; endDate: Date } {
+export function getDateRangeForPeriod(period: ChartPeriod): {
+  startDate: Date;
+  endDate: Date;
+} {
   const endDate = new Date();
   const startDate = new Date(endDate);
 

@@ -53,7 +53,10 @@ const PERIOD_LABELS: { value: ChartPeriod; label: string }[] = [
   { value: "ALL", label: "Всё время" },
 ];
 
-const CHART_TYPE_LABELS: { value: "line" | "area" | "bar" | "candlestick"; label: string }[] = [
+const CHART_TYPE_LABELS: {
+  value: "line" | "area" | "bar" | "candlestick";
+  label: string;
+}[] = [
   { value: "line", label: "Линия" },
   { value: "area", label: "Площадь" },
   { value: "bar", label: "Столбики" },
@@ -88,8 +91,12 @@ export function ChartsView() {
   const chartContainerRef = useRef<HTMLDivElement>(null);
 
   const [chartPeriod, setChartPeriod] = useState<ChartPeriod>("1M");
-  const [chartType, setChartType] = useState<"line" | "area" | "bar" | "candlestick">("line");
-  const [chartDataLocal, setChartDataLocal] = useState<CurrencyData | null>(null);
+  const [chartType, setChartType] = useState<
+    "line" | "area" | "bar" | "candlestick"
+  >("line");
+  const [chartDataLocal, setChartDataLocal] = useState<CurrencyData | null>(
+    null
+  );
   const [loading, setLoading] = useState(false);
 
   const selectedDataFromContext = selectedCurrency
@@ -228,7 +235,8 @@ export function ChartsView() {
     })),
   };
 
-  const candlestickData = UpdateGraphicsService.formatCandlestickData(displayData);
+  const candlestickData =
+    UpdateGraphicsService.formatCandlestickData(displayData);
   if (candlestickData.datasets.length) {
     candlestickData.datasets[0] = {
       ...candlestickData.datasets[0],
@@ -268,7 +276,14 @@ export function ChartsView() {
           label: function (context) {
             const v = context.parsed.y ?? context.parsed?.c;
             if (v != null) {
-              return (context.dataset.label || "") + ": $" + Number(v).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+              return (
+                (context.dataset.label || "") +
+                ": $" +
+                Number(v).toLocaleString("en-US", {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })
+              );
             }
             return "";
           },
@@ -326,7 +341,9 @@ export function ChartsView() {
             <button
               key={value}
               type="button"
-              className={`chart-toolbar-btn ${chartPeriod === value ? "active" : ""}`}
+              className={`chart-toolbar-btn ${
+                chartPeriod === value ? "active" : ""
+              }`}
               onClick={() => setChartPeriod(value)}
             >
               {label}
@@ -339,7 +356,9 @@ export function ChartsView() {
             <button
               key={value}
               type="button"
-              className={`chart-toolbar-btn ${chartType === value ? "active" : ""}`}
+              className={`chart-toolbar-btn ${
+                chartType === value ? "active" : ""
+              }`}
               onClick={() => setChartType(value)}
             >
               {label}
@@ -347,19 +366,44 @@ export function ChartsView() {
           ))}
         </div>
         <div className="chart-toolbar-group">
-          <button type="button" className="chart-toolbar-btn" onClick={handleZoomIn} title="Приблизить">
+          <button
+            type="button"
+            className="chart-toolbar-btn"
+            onClick={handleZoomIn}
+            title="Приблизить"
+          >
             +
           </button>
-          <button type="button" className="chart-toolbar-btn" onClick={handleZoomOut} title="Отдалить">
+          <button
+            type="button"
+            className="chart-toolbar-btn"
+            onClick={handleZoomOut}
+            title="Отдалить"
+          >
             −
           </button>
-          <button type="button" className="chart-toolbar-btn" onClick={handleResetZoom} title="Сбросить зум">
+          <button
+            type="button"
+            className="chart-toolbar-btn"
+            onClick={handleResetZoom}
+            title="Сбросить зум"
+          >
             ⟲
           </button>
-          <button type="button" className="chart-toolbar-btn" onClick={handleFullscreen} title="На весь экран">
+          <button
+            type="button"
+            className="chart-toolbar-btn"
+            onClick={handleFullscreen}
+            title="На весь экран"
+          >
             ⛶
           </button>
-          <button type="button" className="chart-toolbar-btn" onClick={handleDownload} title="Скачать PNG">
+          <button
+            type="button"
+            className="chart-toolbar-btn"
+            onClick={handleDownload}
+            title="Скачать PNG"
+          >
             ⬇
           </button>
         </div>
@@ -389,10 +433,7 @@ export function ChartsView() {
       </div>
 
       {userId > 0 && (
-        <ChartAlertsSection
-          userId={userId}
-          selectedSymbol={selectedCurrency}
-        />
+        <ChartAlertsSection userId={userId} selectedSymbol={selectedCurrency} />
       )}
     </div>
   );
