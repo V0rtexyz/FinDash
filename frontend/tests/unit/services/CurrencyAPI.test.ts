@@ -376,7 +376,9 @@ describe("CurrencyAPI", () => {
     const currencies = await CurrencyAPI.fetchAvailableCurrencies();
     expect(currencies).toBeDefined();
     expect(currencies.length).toBe(3);
-    expect(currencies.some((c) => c.symbol === "BTC" && c.name === "Bitcoin")).toBe(true);
+    expect(
+      currencies.some((c) => c.symbol === "BTC" && c.name === "Bitcoin")
+    ).toBe(true);
   });
 
   test("should handle currencies as object with object values", async () => {
