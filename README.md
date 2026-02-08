@@ -129,6 +129,7 @@ cd frontend && npm ci
 ```bash
 createdb findash
 psql -d findash -f bd.sql
+psql -d findash -f backend/migrations/alerts_and_notifications.sql   # таблицы алертов и уведомлений
 psql -d findash -f data.sql   # опционально — демо-данные
 ```
 
