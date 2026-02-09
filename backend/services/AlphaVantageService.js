@@ -65,7 +65,7 @@ export default class AlphaVantageService {
       const mock = this.getMockQuote(symbol);
       return {
         ...mock,
-        success: true, // Changed to true to avoid breaking the app
+        success: false,
         error: error.message,
         mock: true,
       };
@@ -141,7 +141,7 @@ export default class AlphaVantageService {
         console.error("AlphaVantageService.getTimeSeries error:", error);
       }
       return {
-        success: true, // Changed to true to avoid breaking the app
+        success: false,
         error: error.message,
         data: this.getMockTimeSeries(symbol, interval),
         mock: true,
@@ -200,7 +200,7 @@ export default class AlphaVantageService {
         console.error("AlphaVantageService.searchSymbol error:", error);
       }
       return {
-        success: true, // Changed to true
+        success: false,
         error: error.message,
         matches: [],
         mock: true,

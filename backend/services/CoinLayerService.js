@@ -46,7 +46,7 @@ export default class CoinLayerService {
     } catch (error) {
       console.error("CoinLayerService.getLiveRates error:", error);
       return {
-        success: true, // Changed to true to avoid breaking the app
+        success: false,
         error: error.message,
         // Return mock data if API fails
         rates: this.getMockRates(symbols),
@@ -114,7 +114,7 @@ export default class CoinLayerService {
     } catch (error) {
       console.error("CoinLayerService.getHistoricalRates error:", error);
       return {
-        success: true, // Changed to true to avoid breaking the app
+        success: false,
         error: error.message,
         rates: this.getMockRates(symbols),
         date,
@@ -258,28 +258,14 @@ export default class CoinLayerService {
         throw new Error(errorMsg);
       }
 
-      // Even if API works, return only supported currencies
-      // Filter the API response to only include currencies we have mock data for
-      const supportedCurrencies = this.getMockCurrenciesList();
-      const allCurrencies = data.crypto || data.currencies || {};
-      const filteredCurrencies = {};
-      
-      Object.keys(supportedCurrencies).forEach(symbol => {
-        if (allCurrencies[symbol]) {
-          filteredCurrencies[symbol] = allCurrencies[symbol];
-        } else {
-          filteredCurrencies[symbol] = supportedCurrencies[symbol];
-        }
-      });
-
       return {
         success: true,
-        currencies: filteredCurrencies,
+        currencies: data.crypto || data.currencies || {},
       };
     } catch (error) {
       console.error("CoinLayerService.getCurrenciesList error:", error);
       return {
-        success: true,
+        success: false,
         error: error.message,
         currencies: this.getMockCurrenciesList(),
         mock: true,
