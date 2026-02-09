@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useAuth } from "../context/AuthContext";
 import { CurrencyController } from "../services/CurrencyController";
 import { StorageItem } from "../services/StorageService";
 import "../styles/HistoryList.css";
@@ -8,13 +9,16 @@ interface HistoryListProps {
 }
 
 export function HistoryList({ refreshTrigger }: HistoryListProps) {
+  const { user } = useAuth();
   const [history, setHistory] = useState<StorageItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const loadHistory = async () => {
+    console.log("HistoryList: Loading history for user", user?.id);
     setIsLoading(true);
     try {
       const items = await CurrencyController.getStorage();
+      console.log("HistoryList: Loaded", items.length, "history items");
       setHistory(items);
     } catch (error) {
       console.error("Failed to load history:", error);
@@ -24,8 +28,9 @@ export function HistoryList({ refreshTrigger }: HistoryListProps) {
   };
 
   useEffect(() => {
+    console.log("HistoryList: useEffect triggered, userId:", user?.id, "refreshTrigger:", refreshTrigger);
     loadHistory();
-  }, [refreshTrigger]);
+  }, [refreshTrigger, user?.id]);
 
   const handleRemove = async (itemId: string) => {
     await CurrencyController.removeFromStorage(itemId);

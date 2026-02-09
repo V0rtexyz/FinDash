@@ -46,6 +46,7 @@ export default class DatabaseService {
     if (!this.users) {
       this.users = [];
       this.userFavorites = [];
+      this.userHistory = [];
       this.userReports = [];
       this.userAlerts = [];
       this.userNotifications = [];
@@ -311,6 +312,126 @@ export default class DatabaseService {
       return result.rowCount > 0;
     } catch (error) {
       console.error("DatabaseService.removeFavorite error:", error);
+      throw error;
+    }
+  }
+
+  // History operations
+  async getUserHistory(userId, type = null, limit = 20) {
+    if (!this.usePostgres) {
+      let history = this.userHistory
+        .filter((h) => h.userId === userId)
+        .sort((a, b) => new Date(b.viewedAt) - new Date(a.viewedAt));
+      if (type) {
+        history = history.filter((h) => h.type === type);
+      }
+      return history.slice(0, limit);
+    }
+
+    try {
+      let query =
+        "SELECT id, userId, type, symbol, name, price, change24h, viewedAt FROM user_history WHERE userId = $1";
+      const params = [userId];
+      let paramIndex = 2;
+
+      if (type) {
+        query += ` AND type = $${paramIndex}`;
+        params.push(type);
+        paramIndex++;
+      }
+
+      query += ` ORDER BY viewedAt DESC LIMIT $${paramIndex}`;
+      params.push(limit);
+
+      const result = await this.pool.query(query, params);
+      return result.rows;
+    } catch (error) {
+      console.error("DatabaseService.getUserHistory error:", error);
+      throw error;
+    }
+  }
+
+  async addToHistory(userId, type, symbol, name, price, change24h) {
+    if (!this.usePostgres) {
+      const existingIndex = this.userHistory.findIndex(
+        (h) => h.userId === userId && h.type === type && h.symbol === symbol
+      );
+
+      const historyItem = {
+        id: existingIndex >= 0 ? this.userHistory[existingIndex].id : 
+            Math.max(...this.userHistory.map((h) => h.id), 0) + 1,
+        userId,
+        type,
+        symbol,
+        name,
+        price,
+        change24h,
+        viewedAt: new Date().toISOString(),
+      };
+
+      if (existingIndex >= 0) {
+        this.userHistory[existingIndex] = historyItem;
+      } else {
+        this.userHistory.push(historyItem);
+      }
+
+      return historyItem;
+    }
+
+    try {
+      // Use INSERT ... ON CONFLICT to update viewedAt if exists
+      const result = await this.pool.query(
+        `INSERT INTO user_history (userId, type, symbol, name, price, change24h, viewedAt) 
+         VALUES ($1, $2, $3, $4, $5, $6, NOW()) 
+         ON CONFLICT (userId, type, symbol) 
+         DO UPDATE SET name = $4, price = $5, change24h = $6, viewedAt = NOW()
+         RETURNING id, userId, type, symbol, name, price, change24h, viewedAt`,
+        [userId, type, symbol, name, price, change24h]
+      );
+      return result.rows[0];
+    } catch (error) {
+      console.error("DatabaseService.addToHistory error:", error);
+      throw error;
+    }
+  }
+
+  async removeFromHistory(userId, historyId) {
+    if (!this.usePostgres) {
+      const index = this.userHistory.findIndex(
+        (h) => h.userId === userId && h.id === parseInt(historyId)
+      );
+      if (index !== -1) {
+        this.userHistory.splice(index, 1);
+        return true;
+      }
+      return false;
+    }
+
+    try {
+      const result = await this.pool.query(
+        "DELETE FROM user_history WHERE userId = $1 AND id = $2",
+        [userId, historyId]
+      );
+      return result.rowCount > 0;
+    } catch (error) {
+      console.error("DatabaseService.removeFromHistory error:", error);
+      throw error;
+    }
+  }
+
+  async clearUserHistory(userId) {
+    if (!this.usePostgres) {
+      this.userHistory = this.userHistory.filter((h) => h.userId !== userId);
+      return true;
+    }
+
+    try {
+      await this.pool.query("DELETE FROM user_history WHERE userId = $1", [
+        userId,
+      ]);
+      return true;
+    } catch (error) {
+      console.error("DatabaseService.clearUserHistory error:", error);
       throw error;
     }
   }

@@ -103,8 +103,42 @@ class AuthServiceClass {
   }
 
   logout(): void {
+    console.log("AuthService: Logging out");
+    
+    // Get current userId before clearing
+    const userStr = localStorage.getItem("user");
+    let userId: string | null = null;
+    if (userStr) {
+      try {
+        const user = JSON.parse(userStr);
+        userId = user?.id || null;
+      } catch (e) {
+        // ignore
+      }
+    }
+    
+    // Clear auth data
     localStorage.removeItem("token");
     localStorage.removeItem("user");
+    
+    // Clear current user's data only (if we have userId)
+    if (userId) {
+      const historyKey = `currency_history_${userId}`;
+      const favoritesKey = `currency_favorites_${userId}`;
+      const trackedCurrenciesKey = `tracked_currencies_${userId}`;
+      const selectedCurrencyKey = `selected_currency_${userId}`;
+      
+      console.log("AuthService: Clearing localStorage for userId:", userId);
+      console.log("AuthService: Removing", historyKey);
+      console.log("AuthService: Removing", favoritesKey);
+      console.log("AuthService: Removing", trackedCurrenciesKey);
+      console.log("AuthService: Removing", selectedCurrencyKey);
+      
+      localStorage.removeItem(historyKey);
+      localStorage.removeItem(favoritesKey);
+      localStorage.removeItem(trackedCurrenciesKey);
+      localStorage.removeItem(selectedCurrencyKey);
+    }
   }
 
   getToken(): string | null {

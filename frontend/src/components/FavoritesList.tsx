@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useAuth } from "../context/AuthContext";
 import { CurrencyController } from "../services/CurrencyController";
 import { FavoriteItem } from "../services/StorageService";
 import "../styles/FavoritesList.css";
@@ -8,13 +9,16 @@ interface FavoritesListProps {
 }
 
 export function FavoritesList({ refreshTrigger }: FavoritesListProps) {
+  const { user } = useAuth();
   const [favorites, setFavorites] = useState<FavoriteItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const loadFavorites = async () => {
+    console.log("FavoritesList: Loading favorites for user", user?.id);
     setIsLoading(true);
     try {
       const items = await CurrencyController.getFavorites();
+      console.log("FavoritesList: Loaded", items.length, "favorites");
       setFavorites(items);
     } catch (error) {
       console.error("Failed to load favorites:", error);
@@ -24,8 +28,9 @@ export function FavoritesList({ refreshTrigger }: FavoritesListProps) {
   };
 
   useEffect(() => {
+    console.log("FavoritesList: useEffect triggered, userId:", user?.id, "refreshTrigger:", refreshTrigger);
     loadFavorites();
-  }, [refreshTrigger]);
+  }, [refreshTrigger, user?.id]);
 
   const handleRemove = async (itemId: string) => {
     await CurrencyController.removeFromFavorites(itemId);
