@@ -20,8 +20,11 @@ FROM nginx:alpine
 # Копируем собранный фронт в nginx
 COPY --from=build /app/frontend/dist /usr/share/nginx/html
 
+# Копируем nginx конфигурацию с проксированием на backend
+COPY frontend/nginx.conf /etc/nginx/conf.d/default.conf
+
 # Открываем порт
-EXPOSE 80
+EXPOSE 8080
 
 # Запускаем nginx
 CMD ["nginx", "-g", "daemon off;"]
