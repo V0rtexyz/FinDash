@@ -14,57 +14,66 @@ import { YandexMetrika } from "./components/YandexMetrika";
 import "./index.css";
 
 function App() {
-  return (
-    <Sentry.ErrorBoundary fallback={<div>Произошла ошибка</div>}>
-      <AuthProvider>
-        <CurrencyListProvider>
-          <CurrencyProvider>
-            <ReportProvider>
-              <BrowserRouter>
-                <YandexMetrika />
-                <Routes>
-                  <Route path="/" element={<AuthView />} />
-                  <Route
-                    path="/confirm"
-                    element={
-                      <PrivateRoute>
-                        <Confirm />
-                      </PrivateRoute>
-                    }
-                  />
-                  <Route
-                    path="/dashboard"
-                    element={
-                      <PrivateRoute>
-                        <Dashboard />
-                      </PrivateRoute>
-                    }
-                  />
-                  <Route
-                    path="/tracking"
-                    element={
-                      <PrivateRoute>
-                        <TrackingPage />
-                      </PrivateRoute>
-                    }
-                  />
-                  <Route
-                    path="/reports"
-                    element={
-                      <PrivateRoute>
-                        <ReportsPage />
-                      </PrivateRoute>
-                    }
-                  />
-                  <Route path="*" element={<Navigate to="/" replace />} />
-                </Routes>
-              </BrowserRouter>
-            </ReportProvider>
-          </CurrencyProvider>
-        </CurrencyListProvider>
-      </AuthProvider>
-    </Sentry.ErrorBoundary>
+  const AppContent = (
+    <AuthProvider>
+      <CurrencyListProvider>
+        <CurrencyProvider>
+          <ReportProvider>
+            <BrowserRouter>
+              <YandexMetrika />
+              <Routes>
+                <Route path="/" element={<AuthView />} />
+                <Route
+                  path="/confirm"
+                  element={
+                    <PrivateRoute>
+                      <Confirm />
+                    </PrivateRoute>
+                  }
+                />
+                <Route
+                  path="/dashboard"
+                  element={
+                    <PrivateRoute>
+                      <Dashboard />
+                    </PrivateRoute>
+                  }
+                />
+                <Route
+                  path="/tracking"
+                  element={
+                    <PrivateRoute>
+                      <TrackingPage />
+                    </PrivateRoute>
+                  }
+                />
+                <Route
+                  path="/reports"
+                  element={
+                    <PrivateRoute>
+                      <ReportsPage />
+                    </PrivateRoute>
+                  }
+                />
+                <Route path="*" element={<Navigate to="/" replace />} />
+              </Routes>
+            </BrowserRouter>
+          </ReportProvider>
+        </CurrencyProvider>
+      </CurrencyListProvider>
+    </AuthProvider>
   );
+
+  // Use Sentry ErrorBoundary only in development
+  if (import.meta.env.DEV) {
+    return (
+      <Sentry.ErrorBoundary fallback={<div>Произошла ошибка</div>}>
+        {AppContent}
+      </Sentry.ErrorBoundary>
+    );
+  }
+
+  return AppContent;
 }
 
 export default App;
