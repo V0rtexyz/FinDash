@@ -24,25 +24,25 @@ interface ExtendedStats {
   maxPrice: number;
   avgPrice: number;
   volatility?: number;
-  trend?: 'up' | 'down' | 'stable';
+  trend?: "up" | "down" | "stable";
   changePercent?: number;
 }
 
 class ReportServiceClass {
   private worker: Worker | null = null;
-  private workerSupported = typeof Worker !== 'undefined';
+  private workerSupported = typeof Worker !== "undefined";
 
   constructor() {
     // Инициализация Web Worker если поддерживается
     if (this.workerSupported) {
       try {
         this.worker = new Worker(
-          new URL('../workers/reportDataProcessor.worker.ts', import.meta.url),
-          { type: 'module' }
+          new URL("../workers/reportDataProcessor.worker.ts", import.meta.url),
+          { type: "module" }
         );
-        console.log('✅ Web Worker initialized for report processing');
+        console.log("✅ Web Worker initialized for report processing");
       } catch (error) {
-        console.warn('⚠️ Web Worker not available, using fallback:', error);
+        console.warn("⚠️ Web Worker not available, using fallback:", error);
         this.workerSupported = false;
       }
     }
@@ -56,7 +56,9 @@ class ReportServiceClass {
    * Расчет статистики с использованием Web Worker (если доступен)
    * Fallback на обычные вычисления если Worker не поддерживается
    */
-  private async calculateStatsAsync(history: PricePoint[]): Promise<ExtendedStats> {
+  private async calculateStatsAsync(
+    history: PricePoint[]
+  ): Promise<ExtendedStats> {
     if (history.length === 0) {
       return { minPrice: 0, maxPrice: 0, avgPrice: 0 };
     }
@@ -66,7 +68,7 @@ class ReportServiceClass {
       try {
         return await this.calculateStatsWithWorker(history);
       } catch (error) {
-        console.warn('Worker calculation failed, using fallback:', error);
+        console.warn("Worker calculation failed, using fallback:", error);
         // Fallback на обычные вычисления
         return this.calculateStatsFallback(history);
       }
@@ -79,24 +81,26 @@ class ReportServiceClass {
   /**
    * Расчет статистики через Web Worker
    */
-  private calculateStatsWithWorker(history: PricePoint[]): Promise<ExtendedStats> {
+  private calculateStatsWithWorker(
+    history: PricePoint[]
+  ): Promise<ExtendedStats> {
     return new Promise((resolve, reject) => {
       if (!this.worker) {
-        reject(new Error('Worker not initialized'));
+        reject(new Error("Worker not initialized"));
         return;
       }
 
-      const timeSeries = history.map(h => h.price);
+      const timeSeries = history.map((h) => h.price);
 
       const timeout = setTimeout(() => {
-        reject(new Error('Worker timeout'));
+        reject(new Error("Worker timeout"));
       }, 5000);
 
       const handleMessage = (event: MessageEvent) => {
         clearTimeout(timeout);
-        this.worker?.removeEventListener('message', handleMessage);
+        this.worker?.removeEventListener("message", handleMessage);
 
-        if (event.data.type === 'success') {
+        if (event.data.type === "success") {
           const workerStats = event.data.data;
           resolve({
             minPrice: workerStats.min,
@@ -105,13 +109,13 @@ class ReportServiceClass {
             volatility: workerStats.stdDev,
           });
         } else {
-          reject(new Error(event.data.error || 'Worker error'));
+          reject(new Error(event.data.error || "Worker error"));
         }
       };
 
-      this.worker.addEventListener('message', handleMessage);
+      this.worker.addEventListener("message", handleMessage);
       this.worker.postMessage({
-        type: 'calculateStatistics',
+        type: "calculateStatistics",
         payload: { timeSeries },
       });
     });
@@ -127,19 +131,20 @@ class ReportServiceClass {
       history.reduce((sum, p) => sum + p.price, 0) / history.length;
 
     // Расчет волатильности (стандартное отклонение)
-    const variance = history
-      .map(p => Math.pow(p.price - avgPrice, 2))
-      .reduce((sum, val) => sum + val, 0) / history.length;
+    const variance =
+      history
+        .map((p) => Math.pow(p.price - avgPrice, 2))
+        .reduce((sum, val) => sum + val, 0) / history.length;
     const volatility = Math.sqrt(variance);
 
     // Расчет тренда
-    let trend: 'up' | 'down' | 'stable' = 'stable';
+    let trend: "up" | "down" | "stable" = "stable";
     if (history.length >= 2) {
       const firstPrice = history[0].price;
       const lastPrice = history[history.length - 1].price;
       const change = ((lastPrice - firstPrice) / firstPrice) * 100;
-      if (change > 1) trend = 'up';
-      else if (change < -1) trend = 'down';
+      if (change > 1) trend = "up";
+      else if (change < -1) trend = "down";
     }
 
     return { minPrice, maxPrice, avgPrice, volatility, trend };
@@ -303,19 +308,12 @@ class ReportServiceClass {
 
       // Дополнительная статистика от Web Worker
       if (stats.volatility !== undefined) {
-        doc.text(
-          `Volatility: ${stats.volatility.toFixed(2)}`,
-          14,
-          122
-        );
+        doc.text(`Volatility: ${stats.volatility.toFixed(2)}`, 14, 122);
       }
       if (stats.trend) {
-        const trendEmoji = stats.trend === 'up' ? '↑' : stats.trend === 'down' ? '↓' : '→';
-        doc.text(
-          `Trend: ${stats.trend} ${trendEmoji}`,
-          14,
-          129
-        );
+        const trendEmoji =
+          stats.trend === "up" ? "↑" : stats.trend === "down" ? "↓" : "→";
+        doc.text(`Trend: ${stats.trend} ${trendEmoji}`, 14, 129);
       }
     }
 
@@ -404,7 +402,7 @@ class ReportServiceClass {
   destroy(): void {
     if (this.worker) {
       this.worker.terminate();
-      console.log('✅ Web Worker terminated');
+      console.log("✅ Web Worker terminated");
     }
   }
 

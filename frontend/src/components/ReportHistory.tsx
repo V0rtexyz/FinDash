@@ -16,7 +16,7 @@ export function ReportHistory() {
       try {
         await ReportService.downloadReport(report);
       } catch (error) {
-        console.error('Failed to download report:', error);
+        console.error("Failed to download report:", error);
       }
     }
   };

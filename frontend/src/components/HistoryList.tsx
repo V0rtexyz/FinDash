@@ -28,7 +28,12 @@ export function HistoryList({ refreshTrigger }: HistoryListProps) {
   };
 
   useEffect(() => {
-    console.log("HistoryList: useEffect triggered, userId:", user?.id, "refreshTrigger:", refreshTrigger);
+    console.log(
+      "HistoryList: useEffect triggered, userId:",
+      user?.id,
+      "refreshTrigger:",
+      refreshTrigger
+    );
     loadHistory();
   }, [refreshTrigger, user?.id]);
 

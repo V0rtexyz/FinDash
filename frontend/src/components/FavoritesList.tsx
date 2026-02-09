@@ -28,7 +28,12 @@ export function FavoritesList({ refreshTrigger }: FavoritesListProps) {
   };
 
   useEffect(() => {
-    console.log("FavoritesList: useEffect triggered, userId:", user?.id, "refreshTrigger:", refreshTrigger);
+    console.log(
+      "FavoritesList: useEffect triggered, userId:",
+      user?.id,
+      "refreshTrigger:",
+      refreshTrigger
+    );
     loadFavorites();
   }, [refreshTrigger, user?.id]);
 

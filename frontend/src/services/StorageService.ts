@@ -17,7 +17,7 @@ class StorageServiceClass {
   private readonly FAVORITES_KEY_PREFIX = "currency_favorites_";
   private readonly API_BASE_URL = "http://localhost:3500/api";
   private useBackendAPI = true; // Try backend first
-  
+
   private getUserId(): number | null {
     const userStr = localStorage.getItem("user");
     if (!userStr) {
@@ -27,7 +27,12 @@ class StorageServiceClass {
     try {
       const user = JSON.parse(userStr);
       const userId = user?.id ? parseInt(String(user.id), 10) : null;
-      console.log("StorageService: getUserId() returning:", userId, "from user:", user);
+      console.log(
+        "StorageService: getUserId() returning:",
+        userId,
+        "from user:",
+        user
+      );
       return userId;
     } catch (error) {
       console.error("StorageService: Error parsing user:", error);
@@ -37,31 +42,40 @@ class StorageServiceClass {
 
   private getStorageKey(): string {
     const userId = this.getUserId();
-    return `${this.STORAGE_KEY_PREFIX}${userId || 'guest'}`;
+    return `${this.STORAGE_KEY_PREFIX}${userId || "guest"}`;
   }
 
   private getFavoritesKey(): string {
     const userId = this.getUserId();
-    return `${this.FAVORITES_KEY_PREFIX}${userId || 'guest'}`;
+    return `${this.FAVORITES_KEY_PREFIX}${userId || "guest"}`;
   }
 
   async getStorage(): Promise<StorageItem[]> {
     const userId = this.getUserId();
-    
+
     console.log("StorageService: getStorage called, userId:", userId);
-    
+
     // Try backend API first
     if (this.useBackendAPI && userId) {
       try {
-        const response = await fetch(`${this.API_BASE_URL}/history?userId=${userId}`);
-        console.log("StorageService: History API response status:", response.status);
-        
+        const response = await fetch(
+          `${this.API_BASE_URL}/history?userId=${userId}`
+        );
+        console.log(
+          "StorageService: History API response status:",
+          response.status
+        );
+
         if (response.ok) {
           const data = await response.json();
           console.log("StorageService: History API data:", data);
-          
+
           if (data.success && data.history) {
-            console.log("StorageService: Returning", data.history.length, "history items");
+            console.log(
+              "StorageService: Returning",
+              data.history.length,
+              "history items"
+            );
             return data.history.map((item: any) => ({
               id: item.id.toString(),
               currency: {
@@ -96,9 +110,12 @@ class StorageServiceClass {
 
   async addToStorage(currency: CurrencyData): Promise<void> {
     const userId = this.getUserId();
-    
-    console.log("StorageService: addToStorage called", { userId, symbol: currency.symbol });
-    
+
+    console.log("StorageService: addToStorage called", {
+      userId,
+      symbol: currency.symbol,
+    });
+
     // Try backend API first
     if (this.useBackendAPI && userId) {
       try {
@@ -111,15 +128,18 @@ class StorageServiceClass {
           change24h: currency.change24h,
         };
         console.log("StorageService: Sending to /history", body);
-        
+
         const response = await fetch(`${this.API_BASE_URL}/history`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(body),
         });
-        
-        console.log("StorageService: /history response status:", response.status);
-        
+
+        console.log(
+          "StorageService: /history response status:",
+          response.status
+        );
+
         if (response.ok) {
           const data = await response.json();
           console.log("StorageService: /history response:", data);
@@ -154,14 +174,17 @@ class StorageServiceClass {
 
   async removeFromStorage(itemId: string): Promise<void> {
     const userId = this.getUserId();
-    
+
     // Try backend API first
     if (this.useBackendAPI && userId) {
       try {
-        const response = await fetch(`${this.API_BASE_URL}/history/${itemId}?userId=${userId}`, {
-          method: "DELETE",
-        });
-        
+        const response = await fetch(
+          `${this.API_BASE_URL}/history/${itemId}?userId=${userId}`,
+          {
+            method: "DELETE",
+          }
+        );
+
         if (response.ok) {
           return; // Successfully removed from backend
         }
@@ -178,14 +201,17 @@ class StorageServiceClass {
 
   async clearStorage(): Promise<void> {
     const userId = this.getUserId();
-    
+
     // Try backend API first
     if (this.useBackendAPI && userId) {
       try {
-        const response = await fetch(`${this.API_BASE_URL}/history?userId=${userId}`, {
-          method: "DELETE",
-        });
-        
+        const response = await fetch(
+          `${this.API_BASE_URL}/history?userId=${userId}`,
+          {
+            method: "DELETE",
+          }
+        );
+
         if (response.ok) {
           return; // Successfully cleared from backend
         }
@@ -200,23 +226,28 @@ class StorageServiceClass {
 
   async getFavorites(): Promise<FavoriteItem[]> {
     const userId = this.getUserId();
-    
+
     console.log("StorageService: getFavorites called, userId:", userId);
-    
+
     // Try backend API first
     if (this.useBackendAPI && userId) {
       try {
-        const response = await fetch(`${this.API_BASE_URL}/favorites?userId=${userId}`);
-        console.log("StorageService: Backend API response status:", response.status);
-        
+        const response = await fetch(
+          `${this.API_BASE_URL}/favorites?userId=${userId}`
+        );
+        console.log(
+          "StorageService: Backend API response status:",
+          response.status
+        );
+
         if (response.ok) {
           const data = await response.json();
           console.log("StorageService: Backend API data:", data);
-          
+
           if (data.success && data.favorites) {
             // Get all symbols
-            const symbols = data.favorites.map((f: any) => f.symbol).join(',');
-            
+            const symbols = data.favorites.map((f: any) => f.symbol).join(",");
+
             // Fetch current prices in one batch request
             let pricesMap: Record<string, any> = {};
             if (symbols) {
@@ -234,7 +265,7 @@ class StorageServiceClass {
                 console.warn("Failed to fetch batch prices:", err);
               }
             }
-            
+
             // Map favorites with prices
             const favoritesWithPrices = data.favorites.map((item: any) => ({
               id: item.id.toString(),
@@ -246,8 +277,12 @@ class StorageServiceClass {
               },
               addedAt: new Date(item.createdAt),
             }));
-            
-            console.log("StorageService: Returning", favoritesWithPrices.length, "favorites");
+
+            console.log(
+              "StorageService: Returning",
+              favoritesWithPrices.length,
+              "favorites"
+            );
             return favoritesWithPrices;
           }
         }
@@ -273,9 +308,12 @@ class StorageServiceClass {
 
   async addToFavorites(currency: CurrencyData): Promise<void> {
     const userId = this.getUserId();
-    
-    console.log("StorageService: addToFavorites called", { userId, symbol: currency.symbol });
-    
+
+    console.log("StorageService: addToFavorites called", {
+      userId,
+      symbol: currency.symbol,
+    });
+
     // Try backend API first
     if (this.useBackendAPI && userId) {
       try {
@@ -285,15 +323,18 @@ class StorageServiceClass {
           symbol: currency.symbol,
         };
         console.log("StorageService: Sending to /favorites", body);
-        
+
         const response = await fetch(`${this.API_BASE_URL}/favorites`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(body),
         });
-        
-        console.log("StorageService: /favorites response status:", response.status);
-        
+
+        console.log(
+          "StorageService: /favorites response status:",
+          response.status
+        );
+
         if (response.ok || response.status === 409) {
           const data = await response.json();
           console.log("StorageService: /favorites response:", data);
@@ -328,19 +369,19 @@ class StorageServiceClass {
 
   async removeFromFavorites(itemId: string): Promise<void> {
     const userId = this.getUserId();
-    
+
     // Try backend API first - need to find the item first to get symbol
     if (this.useBackendAPI && userId) {
       try {
         const favorites = await this.getFavorites();
         const item = favorites.find((f) => f.id === itemId);
-        
+
         if (item) {
           const response = await fetch(
             `${this.API_BASE_URL}/favorites?userId=${userId}&type=currency&symbol=${item.currency.symbol}`,
             { method: "DELETE" }
           );
-          
+
           if (response.ok) {
             return; // Successfully removed from backend
           }

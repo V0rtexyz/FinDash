@@ -26,29 +26,47 @@ const CurrencyContext = createContext<CurrencyContextType | undefined>(
 );
 
 // Helper functions for localStorage with userId
-const getUserCurrenciesKey = (userId: string | null) => 
-  `tracked_currencies_${userId || 'guest'}`;
+const getUserCurrenciesKey = (userId: string | null) =>
+  `tracked_currencies_${userId || "guest"}`;
 
-const getUserSelectedCurrencyKey = (userId: string | null) => 
-  `selected_currency_${userId || 'guest'}`;
+const getUserSelectedCurrencyKey = (userId: string | null) =>
+  `selected_currency_${userId || "guest"}`;
 
-const saveCurrenciesToStorage = (userId: string | null, currencies: Map<string, CurrencyData>) => {
+const saveCurrenciesToStorage = (
+  userId: string | null,
+  currencies: Map<string, CurrencyData>
+) => {
   try {
     const currenciesArray = Array.from(currencies.entries());
-    localStorage.setItem(getUserCurrenciesKey(userId), JSON.stringify(currenciesArray));
-    console.log("CurrencyContext: Saved", currenciesArray.length, "currencies for user", userId);
+    localStorage.setItem(
+      getUserCurrenciesKey(userId),
+      JSON.stringify(currenciesArray)
+    );
+    console.log(
+      "CurrencyContext: Saved",
+      currenciesArray.length,
+      "currencies for user",
+      userId
+    );
   } catch (error) {
     console.error("Failed to save currencies to localStorage:", error);
   }
 };
 
-const loadCurrenciesFromStorage = (userId: string | null): Map<string, CurrencyData> => {
+const loadCurrenciesFromStorage = (
+  userId: string | null
+): Map<string, CurrencyData> => {
   try {
     const stored = localStorage.getItem(getUserCurrenciesKey(userId));
     if (stored) {
       const currenciesArray = JSON.parse(stored);
       const map = new Map<string, CurrencyData>(currenciesArray);
-      console.log("CurrencyContext: Loaded", map.size, "currencies for user", userId);
+      console.log(
+        "CurrencyContext: Loaded",
+        map.size,
+        "currencies for user",
+        userId
+      );
       return map;
     }
   } catch (error) {
@@ -57,7 +75,10 @@ const loadCurrenciesFromStorage = (userId: string | null): Map<string, CurrencyD
   return new Map();
 };
 
-const saveSelectedCurrencyToStorage = (userId: string | null, symbol: string | null) => {
+const saveSelectedCurrencyToStorage = (
+  userId: string | null,
+  symbol: string | null
+) => {
   try {
     if (symbol) {
       localStorage.setItem(getUserSelectedCurrencyKey(userId), symbol);
@@ -69,7 +90,9 @@ const saveSelectedCurrencyToStorage = (userId: string | null, symbol: string | n
   }
 };
 
-const loadSelectedCurrencyFromStorage = (userId: string | null): string | null => {
+const loadSelectedCurrencyFromStorage = (
+  userId: string | null
+): string | null => {
   try {
     return localStorage.getItem(getUserSelectedCurrencyKey(userId));
   } catch (error) {
@@ -81,25 +104,28 @@ const loadSelectedCurrencyFromStorage = (userId: string | null): string | null =
 export function CurrencyProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   const userId = user?.id || null;
-  
-  const [currencies, setCurrencies] = useState<Map<string, CurrencyData>>(() => 
+
+  const [currencies, setCurrencies] = useState<Map<string, CurrencyData>>(() =>
     loadCurrenciesFromStorage(userId)
   );
-  const [selectedCurrency, setSelectedCurrency] = useState<string | null>(() => 
+  const [selectedCurrency, setSelectedCurrency] = useState<string | null>(() =>
     loadSelectedCurrencyFromStorage(userId)
   );
   const [subscriptions, setSubscriptions] = useState<Map<string, () => void>>(
     new Map()
   );
 
-  const addCurrency = useCallback((data: CurrencyData) => {
-    setCurrencies((prev) => {
-      const next = new Map(prev);
-      next.set(data.symbol, data);
-      saveCurrenciesToStorage(userId, next);
-      return next;
-    });
-  }, [userId]);
+  const addCurrency = useCallback(
+    (data: CurrencyData) => {
+      setCurrencies((prev) => {
+        const next = new Map(prev);
+        next.set(data.symbol, data);
+        saveCurrenciesToStorage(userId, next);
+        return next;
+      });
+    },
+    [userId]
+  );
 
   const mergeCurrencyUpdate = useCallback(
     (symbol: string, partial: Partial<CurrencyData>) => {
@@ -122,14 +148,17 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
     [userId]
   );
 
-  const removeCurrency = useCallback((symbol: string) => {
-    setCurrencies((prev) => {
-      const next = new Map(prev);
-      next.delete(symbol);
-      saveCurrenciesToStorage(userId, next);
-      return next;
-    });
-  }, [userId]);
+  const removeCurrency = useCallback(
+    (symbol: string) => {
+      setCurrencies((prev) => {
+        const next = new Map(prev);
+        next.delete(symbol);
+        saveCurrenciesToStorage(userId, next);
+        return next;
+      });
+    },
+    [userId]
+  );
 
   const subscribeToCurrency = useCallback(
     (symbol: string) => {
@@ -175,25 +204,28 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
-  const selectCurrency = useCallback((symbol: string) => {
-    setSelectedCurrency(symbol);
-    saveSelectedCurrencyToStorage(userId, symbol);
-  }, [userId]);
+  const selectCurrency = useCallback(
+    (symbol: string) => {
+      setSelectedCurrency(symbol);
+      saveSelectedCurrencyToStorage(userId, symbol);
+    },
+    [userId]
+  );
 
   // Clear and reload when user changes
   useEffect(() => {
     console.log("CurrencyContext: User changed to", userId);
-    
+
     // Unsubscribe from all current subscriptions
     subscriptions.forEach((unsubscribe) => unsubscribe());
-    
+
     // Load user-specific data
     const loadedCurrencies = loadCurrenciesFromStorage(userId);
     const loadedSelected = loadSelectedCurrencyFromStorage(userId);
-    
+
     setCurrencies(loadedCurrencies);
     setSelectedCurrency(loadedSelected);
-    
+
     // Re-subscribe to loaded currencies
     const newSubscriptions = new Map<string, () => void>();
     loadedCurrencies.forEach((_, symbol) => {
@@ -216,7 +248,7 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
       });
       newSubscriptions.set(symbol, unsubscribe);
     });
-    
+
     setSubscriptions(newSubscriptions);
   }, [userId]);
 

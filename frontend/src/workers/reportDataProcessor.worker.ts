@@ -5,12 +5,12 @@
 
 // Типы сообщений
 interface WorkerMessage {
-  type: 'processReportData' | 'calculateStatistics';
+  type: "processReportData" | "calculateStatistics";
   payload: any;
 }
 
 interface WorkerResponse {
-  type: 'success' | 'error';
+  type: "success" | "error";
   data?: any;
   error?: string;
 }
@@ -21,10 +21,10 @@ self.onmessage = (event: MessageEvent<WorkerMessage>) => {
 
   try {
     switch (type) {
-      case 'processReportData':
+      case "processReportData":
         processReportData(payload);
         break;
-      case 'calculateStatistics':
+      case "calculateStatistics":
         calculateStatistics(payload);
         break;
       default:
@@ -32,8 +32,8 @@ self.onmessage = (event: MessageEvent<WorkerMessage>) => {
     }
   } catch (error) {
     const response: WorkerResponse = {
-      type: 'error',
-      error: error instanceof Error ? error.message : 'Unknown error',
+      type: "error",
+      error: error instanceof Error ? error.message : "Unknown error",
     };
     self.postMessage(response);
   }
@@ -65,13 +65,17 @@ function processReportData(payload: any) {
   // Общая статистика портфеля
   const portfolioStats = {
     totalCurrencies: processedData.length,
-    avgVolatility: calculateAverage(processedData.map((d: any) => d.volatility)),
-    positiveChanges: processedData.filter((d: any) => d.changePercent > 0).length,
-    negativeChanges: processedData.filter((d: any) => d.changePercent < 0).length,
+    avgVolatility: calculateAverage(
+      processedData.map((d: any) => d.volatility)
+    ),
+    positiveChanges: processedData.filter((d: any) => d.changePercent > 0)
+      .length,
+    negativeChanges: processedData.filter((d: any) => d.changePercent < 0)
+      .length,
   };
 
   const response: WorkerResponse = {
-    type: 'success',
+    type: "success",
     data: {
       currencies: processedData,
       portfolio: portfolioStats,
@@ -98,7 +102,7 @@ function calculateStatistics(payload: any) {
   };
 
   const response: WorkerResponse = {
-    type: 'success',
+    type: "success",
     data: stats,
   };
 
@@ -136,15 +140,15 @@ function calculateVolatility(history: any[]): number {
   return calculateStdDev(prices);
 }
 
-function calculateTrend(history: any[]): 'up' | 'down' | 'stable' {
-  if (history.length < 2) return 'stable';
+function calculateTrend(history: any[]): "up" | "down" | "stable" {
+  if (history.length < 2) return "stable";
   const firstPrice = history[0].price;
   const lastPrice = history[history.length - 1].price;
   const change = ((lastPrice - firstPrice) / firstPrice) * 100;
-  
-  if (change > 1) return 'up';
-  if (change < -1) return 'down';
-  return 'stable';
+
+  if (change > 1) return "up";
+  if (change < -1) return "down";
+  return "stable";
 }
 
 function calculateChangePercent(history: any[]): number {
@@ -156,4 +160,3 @@ function calculateChangePercent(history: any[]): number {
 
 // Экспорт для TypeScript
 export {};
-

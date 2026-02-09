@@ -13,7 +13,7 @@ export function ReportsPage() {
       try {
         await ReportService.downloadReport(currentReport);
       } catch (error) {
-        console.error('Failed to download report:', error);
+        console.error("Failed to download report:", error);
       }
     }
   };

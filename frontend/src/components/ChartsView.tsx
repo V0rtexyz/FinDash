@@ -84,9 +84,7 @@ export function ChartsView() {
   const chartContainerRef = useRef<HTMLDivElement>(null);
 
   const [chartPeriod, setChartPeriod] = useState<ChartPeriod>("1M");
-  const [chartType, setChartType] = useState<
-    "line" | "area" | "bar"
-  >("line");
+  const [chartType, setChartType] = useState<"line" | "area" | "bar">("line");
   const [chartDataLocal, setChartDataLocal] = useState<CurrencyData | null>(
     null
   );
