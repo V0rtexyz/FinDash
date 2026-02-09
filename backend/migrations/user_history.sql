@@ -30,3 +30,4 @@ BEFORE UPDATE ON user_history
 FOR EACH ROW
 EXECUTE FUNCTION update_user_history_timestamp();
 
+

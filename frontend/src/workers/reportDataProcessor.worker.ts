@@ -160,3 +160,4 @@ function calculateChangePercent(history: any[]): number {
 
 // Экспорт для TypeScript
 export {};
+
