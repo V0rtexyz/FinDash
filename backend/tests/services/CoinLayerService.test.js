@@ -312,8 +312,8 @@ describe("CoinLayerService", () => {
       const mockResponse = {
         success: true,
         crypto: {
-          BTC: "Bitcoin",
-          ETH: "Ethereum",
+          BTC: "Bitcoin from API",
+          ETH: "Ethereum from API",
         },
       };
 
@@ -324,7 +324,14 @@ describe("CoinLayerService", () => {
       const result = await service.getCurrenciesList();
 
       expect(result.success).toBe(true);
-      expect(result.currencies).toEqual(mockResponse.crypto);
+      // Should merge API data with mock data
+      expect(result.currencies.BTC).toBe("Bitcoin from API");
+      expect(result.currencies.ETH).toBe("Ethereum from API");
+      // Should include other mock currencies
+      expect(result.currencies.USD).toBe("US Dollar");
+      expect(result.currencies.EUR).toBe("Euro");
+      // Should have all 25 mock currencies
+      expect(Object.keys(result.currencies).length).toBeGreaterThanOrEqual(25);
     });
 
     it("should fallback to mock currencies on failure", async () => {

@@ -258,9 +258,21 @@ export default class CoinLayerService {
         throw new Error(errorMsg);
       }
 
+      // Merge API data with mock data to ensure all supported currencies are available
+      const mockCurrencies = this.getMockCurrenciesList();
+      const apiCurrencies = data.crypto || data.currencies || {};
+      
+      // Start with mock currencies and override with API data where available
+      const mergedCurrencies = { ...mockCurrencies };
+      Object.keys(apiCurrencies).forEach(symbol => {
+        if (mockCurrencies[symbol]) {
+          mergedCurrencies[symbol] = apiCurrencies[symbol];
+        }
+      });
+
       return {
         success: true,
-        currencies: data.crypto || data.currencies || {},
+        currencies: mergedCurrencies,
       };
     } catch (error) {
       console.error("CoinLayerService.getCurrenciesList error:", error);
