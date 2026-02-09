@@ -18,12 +18,141 @@ export interface Report {
   data?: CurrencyData;
 }
 
+// Интерфейс для расширенной статистики из Worker
+interface ExtendedStats {
+  minPrice: number;
+  maxPrice: number;
+  avgPrice: number;
+  volatility?: number;
+  trend?: "up" | "down" | "stable";
+  changePercent?: number;
+}
+
 class ReportServiceClass {
+  private worker: Worker | null = null;
+  private workerSupported = typeof Worker !== "undefined";
+
+  constructor() {
+    // Инициализация Web Worker если поддерживается
+    if (this.workerSupported) {
+      try {
+        this.worker = new Worker(
+          new URL("../workers/reportDataProcessor.worker.ts", import.meta.url),
+          { type: "module" }
+        );
+        console.log("✅ Web Worker initialized for report processing");
+      } catch (error) {
+        console.warn("⚠️ Web Worker not available, using fallback:", error);
+        this.workerSupported = false;
+      }
+    }
+  }
   private generateReportName(params: ReportParams): string {
     const dateStr = new Date().toISOString().split("T")[0];
     return `${params.currency}_${params.interval}_${dateStr}`;
   }
 
+  /**
+   * Расчет статистики с использованием Web Worker (если доступен)
+   * Fallback на обычные вычисления если Worker не поддерживается
+   */
+  private async calculateStatsAsync(
+    history: PricePoint[]
+  ): Promise<ExtendedStats> {
+    if (history.length === 0) {
+      return { minPrice: 0, maxPrice: 0, avgPrice: 0 };
+    }
+
+    // Пытаемся использовать Web Worker для тяжелых вычислений
+    if (this.workerSupported && this.worker && history.length > 50) {
+      try {
+        return await this.calculateStatsWithWorker(history);
+      } catch (error) {
+        console.warn("Worker calculation failed, using fallback:", error);
+        // Fallback на обычные вычисления
+        return this.calculateStatsFallback(history);
+      }
+    }
+
+    // Для небольших массивов или без Worker - используем обычные вычисления
+    return this.calculateStatsFallback(history);
+  }
+
+  /**
+   * Расчет статистики через Web Worker
+   */
+  private calculateStatsWithWorker(
+    history: PricePoint[]
+  ): Promise<ExtendedStats> {
+    return new Promise((resolve, reject) => {
+      if (!this.worker) {
+        reject(new Error("Worker not initialized"));
+        return;
+      }
+
+      const timeSeries = history.map((h) => h.price);
+
+      const timeout = setTimeout(() => {
+        reject(new Error("Worker timeout"));
+      }, 5000);
+
+      const handleMessage = (event: MessageEvent) => {
+        clearTimeout(timeout);
+        this.worker?.removeEventListener("message", handleMessage);
+
+        if (event.data.type === "success") {
+          const workerStats = event.data.data;
+          resolve({
+            minPrice: workerStats.min,
+            maxPrice: workerStats.max,
+            avgPrice: workerStats.mean,
+            volatility: workerStats.stdDev,
+          });
+        } else {
+          reject(new Error(event.data.error || "Worker error"));
+        }
+      };
+
+      this.worker.addEventListener("message", handleMessage);
+      this.worker.postMessage({
+        type: "calculateStatistics",
+        payload: { timeSeries },
+      });
+    });
+  }
+
+  /**
+   * Fallback: обычные вычисления без Worker
+   */
+  private calculateStatsFallback(history: PricePoint[]): ExtendedStats {
+    const minPrice = Math.min(...history.map((p) => p.price));
+    const maxPrice = Math.max(...history.map((p) => p.price));
+    const avgPrice =
+      history.reduce((sum, p) => sum + p.price, 0) / history.length;
+
+    // Расчет волатильности (стандартное отклонение)
+    const variance =
+      history
+        .map((p) => Math.pow(p.price - avgPrice, 2))
+        .reduce((sum, val) => sum + val, 0) / history.length;
+    const volatility = Math.sqrt(variance);
+
+    // Расчет тренда
+    let trend: "up" | "down" | "stable" = "stable";
+    if (history.length >= 2) {
+      const firstPrice = history[0].price;
+      const lastPrice = history[history.length - 1].price;
+      const change = ((lastPrice - firstPrice) / firstPrice) * 100;
+      if (change > 1) trend = "up";
+      else if (change < -1) trend = "down";
+    }
+
+    return { minPrice, maxPrice, avgPrice, volatility, trend };
+  }
+
+  /**
+   * Синхронная версия для обратной совместимости
+   */
   private calculateStats(history: PricePoint[]) {
     if (history.length === 0) {
       return { minPrice: 0, maxPrice: 0, avgPrice: 0 };
@@ -88,7 +217,7 @@ class ReportServiceClass {
     return report;
   }
 
-  generatePDF(report: Report): void {
+  async generatePDF(report: Report): Promise<void> {
     if (!report.data) return;
 
     const doc = new jsPDF();
@@ -104,8 +233,8 @@ class ReportServiceClass {
     // Оптимизируем для PDF (не более 100 точек)
     const optimizedHistory = this.optimizeHistoryForPDF(filteredHistory, 100);
 
-    // Вычисляем статистику
-    const stats = this.calculateStats(filteredHistory);
+    // Вычисляем статистику (используем Web Worker если доступен)
+    const stats = await this.calculateStatsAsync(filteredHistory);
 
     doc.setFontSize(20);
     doc.text("FinDash - Currency Report", 14, 20);
@@ -176,6 +305,16 @@ class ReportServiceClass {
         14,
         115
       );
+
+      // Дополнительная статистика от Web Worker
+      if (stats.volatility !== undefined) {
+        doc.text(`Volatility: ${stats.volatility.toFixed(2)}`, 14, 122);
+      }
+      if (stats.trend) {
+        const trendEmoji =
+          stats.trend === "up" ? "↑" : stats.trend === "down" ? "↓" : "→";
+        doc.text(`Trend: ${stats.trend} ${trendEmoji}`, 14, 129);
+      }
     }
 
     if (optimizedHistory.length > 0) {
@@ -249,11 +388,21 @@ class ReportServiceClass {
     link.click();
   }
 
-  downloadReport(report: Report): void {
+  async downloadReport(report: Report): Promise<void> {
     if (report.format === "pdf") {
-      this.generatePDF(report);
+      await this.generatePDF(report);
     } else {
       this.generateCSV(report);
+    }
+  }
+
+  /**
+   * Очистка Worker при завершении работы
+   */
+  destroy(): void {
+    if (this.worker) {
+      this.worker.terminate();
+      console.log("✅ Web Worker terminated");
     }
   }
 

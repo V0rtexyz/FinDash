@@ -10,10 +10,14 @@ export function ReportHistory() {
     loadReports();
   }, [loadReports]);
 
-  const handleDownload = (reportId: string) => {
+  const handleDownload = async (reportId: string) => {
     const report = reports.find((r) => r.id === reportId);
     if (report) {
-      ReportService.downloadReport(report);
+      try {
+        await ReportService.downloadReport(report);
+      } catch (error) {
+        console.error("Failed to download report:", error);
+      }
     }
   };
 

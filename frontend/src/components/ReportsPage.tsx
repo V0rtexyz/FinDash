@@ -8,9 +8,13 @@ import "../styles/ReportsPage.css";
 export function ReportsPage() {
   const { currentReport, isGenerating, error } = useReport();
 
-  const handleDownloadCurrent = () => {
+  const handleDownloadCurrent = async () => {
     if (currentReport) {
-      ReportService.downloadReport(currentReport);
+      try {
+        await ReportService.downloadReport(currentReport);
+      } catch (error) {
+        console.error("Failed to download report:", error);
+      }
     }
   };
 
