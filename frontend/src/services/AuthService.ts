@@ -99,6 +99,20 @@ class AuthServiceClass {
     }
 
     const data: AuthResponse = await response.json();
+
+    // Automatically log in after successful registration
+    if (data.success && data.userId && data.userName) {
+      const token = `token_${data.userId}_${Date.now()}`;
+      const user = {
+        id: String(data.userId),
+        email: data.userName,
+        name: data.userName,
+      };
+
+      localStorage.setItem("token", token);
+      localStorage.setItem("user", JSON.stringify(user));
+    }
+
     return data;
   }
 

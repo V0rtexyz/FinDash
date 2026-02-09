@@ -16,7 +16,7 @@ class StorageServiceClass {
   private readonly STORAGE_KEY_PREFIX = "currency_history_";
   private readonly FAVORITES_KEY_PREFIX = "currency_favorites_";
   private readonly API_BASE_URL = "http://localhost:3500/api";
-  private useBackendAPI = true; // Try backend first
+  private useBackendAPI = false; // Use localStorage only for user-specific data
 
   private getUserId(): number | null {
     const userStr = localStorage.getItem("user");
